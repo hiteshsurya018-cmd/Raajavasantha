@@ -1,0 +1,4 @@
+using Rajavasantha.Api.Domain; using Rajavasantha.Api.Infrastructure;
+namespace Rajavasantha.Api.Application;
+public interface IDonationService { Task<Donation> RecordPaidAsync(Guid id,string providerPaymentId,CancellationToken ct=default); }
+public sealed class DonationService(IRepository<Donation> donations):IDonationService { public async Task<Donation> RecordPaidAsync(Guid id,string providerPaymentId,CancellationToken ct=default){var d=await donations.GetAsync(id,ct)??throw new KeyNotFoundException("Donation was not found.");if(d.Status=="Paid")return d;if(string.IsNullOrWhiteSpace(providerPaymentId))throw new ArgumentException("Provider payment identifier is required.");d.Status="Paid";d.ProviderPaymentId=providerPaymentId;d.ReceiptNumber=$"RWT-{DateTime.UtcNow:yyyy}-{d.Id.ToString("N")[..8].ToUpperInvariant()}";d.UpdatedAt=DateTimeOffset.UtcNow;await donations.SaveAsync(ct);return d;} }

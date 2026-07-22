@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  body {
+    @apply bg-canvas text-ink font-body antialiased;
+    font-feature-settings: "ss01" on, "cv11" on;
+  }
+
+  .dark body {
+    @apply bg-dark-canvas text-[#F3ECE4];
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-playfair), serif;
+    letter-spacing: -0.01em;
+  }
+
+  /* Visible, on-brand focus ring for keyboard navigation */
+  :focus-visible {
+    outline: 2px solid #D4A437;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: #D4A437;
+    color: #2C2C2C;
+  }
+}
+
+@layer components {
+  /* Eyebrow label — tracked, small-caps utility type */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-primary/80;
+  }
+  .dark .eyebrow {
+    @apply text-secondary/90;
+  }
+
+  /* Signature element: the Root & Branch line.
+     A hand-drawn organic path that threads between sections,
+     echoing the banyan-tree mark in the trust's own logo. Draws
+     itself in on scroll via the .in-view class toggled by <Reveal>. */
+  .root-line path {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    transition: stroke-dashoffset 2.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .root-line.in-view path {
+    stroke-dashoffset: 0;
+  }
+
+  .card-lift {
+    @apply transition-all duration-500 ease-editorial;
+  }
+  .card-lift:hover {
+    transform: translateY(-6px);
+    @apply shadow-lift;
+  }
+
+  .glass {
+    background: rgba(255, 253, 248, 0.72);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+  }
+  .dark .glass {
+    background: rgba(26, 18, 16, 0.6);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

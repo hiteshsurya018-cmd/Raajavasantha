@@ -1,0 +1,1 @@
+import type { MetadataRoute } from 'next'; export default function sitemap():MetadataRoute.Sitemap{const base='https://rajavasanthawelfaretrust.org';return ['','/about','/projects','/gallery','/news','/volunteer','/donate','/contact'].map(url=>({url:`${base}${url}`,lastModified:new Date(),changeFrequency:'monthly',priority:url===''?1:.7}))}

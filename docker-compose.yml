@@ -1,0 +1,26 @@
+services:
+  web:
+    build: .
+    environment:
+      NEXT_PUBLIC_API_URL: https://api.example.org
+    ports: ["3000:3000"]
+    depends_on: [api]
+  api:
+    build: ./backend/Rajavasantha.Api
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__SqlServer: Server=db,1433;Database=Rajavasantha;User Id=sa;Password=ChangeThis_OnlyForLocal123!;TrustServerCertificate=True
+      Jwt__Issuer: Rajavasantha.Api
+      Jwt__Audience: Rajavasantha.Web
+      Jwt__Key: replace-with-a-secret-managed-by-key-vault-at-least-32-bytes
+      Cors__Origins__0: http://localhost:3000
+    ports: ["8080:8080"]
+    depends_on: [db]
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: Y
+      MSSQL_SA_PASSWORD: ChangeThis_OnlyForLocal123!
+    ports: ["1433:1433"]
+    volumes: ["sql-data:/var/opt/mssql"]
+volumes: { sql-data: {} }
