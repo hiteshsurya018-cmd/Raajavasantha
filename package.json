@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
@@ -35,5 +35,8 @@
     "tailwindcss": "^3.4.14",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.6.3"
+  },
+  "optionalDependencies": {
+    "@next/swc-win32-x64-msvc": "^15.5.21"
   }
 }

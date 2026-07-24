@@ -26,13 +26,15 @@ export function Gallery() {
 
   const filtered = filter === "All" ? IMAGES : IMAGES.filter((i) => i.category === filter);
 
-  function close() {
+  const close = React.useCallback(() => {
     setLightboxIndex(null);
-  }
-  function step(dir: 1 | -1) {
-    if (lightboxIndex === null) return;
-    setLightboxIndex((lightboxIndex + dir + filtered.length) % filtered.length);
-  }
+  }, []);
+
+  const step = React.useCallback((dir: 1 | -1) => {
+    setLightboxIndex((current) =>
+      current === null ? current : (current + dir + filtered.length) % filtered.length
+    );
+  }, [filtered.length]);
 
   React.useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -43,7 +45,7 @@ export function Gallery() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [lightboxIndex, filtered.length]);
+  }, [close, lightboxIndex, step]);
 
   return (
     <section className="bg-canvas py-24">

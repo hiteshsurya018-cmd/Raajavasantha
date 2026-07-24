@@ -3,6 +3,11 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --font-playfair: Georgia, "Times New Roman", serif;
+    --font-inter: Arial, Helvetica, sans-serif;
+  }
+
   html {
     scroll-behavior: smooth;
   }
