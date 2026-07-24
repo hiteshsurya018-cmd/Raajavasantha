@@ -20,8 +20,21 @@ export const metadata: Metadata = {
     description: "Service is our duty, Society is our family.",
     url: "https://rajavasanthawelfaretrust.org",
     siteName: "Rajavasantha Welfare Trust",
+    images: [
+      {
+        url: "/logo.jpeg",
+        width: 800,
+        height: 800,
+        alt: "Rajavasantha Welfare Trust logo",
+      },
+    ],
     locale: "en_IN",
     type: "website",
+  },
+  icons: {
+    icon: "/logo.jpeg",
+    shortcut: "/logo.jpeg",
+    apple: "/logo.jpeg",
   },
   robots: { index: true, follow: true },
 };
