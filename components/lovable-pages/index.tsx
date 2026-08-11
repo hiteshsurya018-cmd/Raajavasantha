@@ -40,13 +40,11 @@ export default function Home() {
         />
         <div className="relative mx-auto flex min-h-[92dvh] max-w-[80rem] flex-col justify-end px-5 pt-36 pb-16 lg:px-10 lg:pb-24">
           <Reveal>
-            <p className="text-[0.65rem] font-semibold tracking-[0.3em] text-gold uppercase">
-              Rajavasantha Welfare Trust • Bengaluru, Karnataka
-            </p>
+            
             <h1 className="display-xl mt-8 max-w-4xl text-ivory">
-              Building stronger communities.
+              Sercice is our duty,
               <span className="block text-gold-soft">
-                Creating pathways to a better tomorrow.
+              Society is our family.
               </span>
             </h1>
             <p className="mt-8 max-w-2xl text-lg leading-relaxed text-ivory/80">

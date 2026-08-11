@@ -81,13 +81,21 @@ export function Footer() {
           ))}
           <div>
             <h2 className="eyebrow-plain">Contact</h2>
-            <a
-              href={`mailto:${contact.email}`}
-              className="mt-5 inline-flex items-center gap-2 text-sm text-ivory/80 transition-colors hover:text-gold"
-            >
-              <Mail className="h-4 w-4 text-gold" /> {contact.email}
-            </a>
-            <a>Phone:+91 88612 49999</a>
+
+<a
+  href={`mailto:${contact.email}`}
+  className="mt-5 inline-flex items-center gap-2 text-sm text-ivory/80 transition-colors hover:text-gold"
+>
+  <Mail className="h-4 w-4 text-gold" />
+  {contact.email}
+</a>
+
+<a
+  href="tel:+91 8861249999"
+  className="mt-3 inline-flex items-center gap-2 text-sm text-ivory/80 transition-colors hover:text-gold"
+>
+  ☏ +91 8861249999
+</a>
 
             <h2 className="eyebrow-plain mt-8">Office</h2>
             <address className="mt-5 flex gap-2 text-sm leading-relaxed text-ivory/75 not-italic">

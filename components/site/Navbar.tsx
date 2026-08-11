@@ -24,17 +24,27 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 24);
+    };
+
     onScroll();
+
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
+
     return () => {
       document.body.style.overflow = "";
     };
@@ -51,10 +61,18 @@ export function Navbar() {
           : "bg-transparent",
       )}
     >
-      <div className="mx-auto flex max-w-[80rem] items-center justify-between gap-4 px-5 lg:px-10">
+      {/* =====================================================
+          HEADER CONTAINER
+          Full width — no side spaces
+      ====================================================== */}
+      <div className="flex w-full items-center gap-4 px-5 lg:px-6">
+
+        {/* =====================================================
+            LOGO + BRAND
+        ====================================================== */}
         <Link
           href="/"
-          className="flex items-center gap-3 py-3"
+          className="flex shrink-0 items-center gap-3 py-3 lg:ml-7"
           aria-label="Rajavasantha Welfare Trust — home"
         >
           <span
@@ -66,12 +84,18 @@ export function Navbar() {
             <img
               src={logo.url}
               alt="Rajavasantha Welfare Trust emblem"
-              width={44}
-              height={40}
-              className={cn("w-auto transition-all duration-500", light ? "h-8" : "h-9")}
+              width={42}
+              height={38}
+              className={cn(
+                "w-auto transition-all duration-500",
+                light ? "h-8" : "h-9",
+              )}
             />
           </span>
+
           <span className="leading-tight">
+
+            {/* Rajavasantha */}
             <span
               className={cn(
                 "block font-display text-[0.95rem] font-semibold tracking-[0.16em] uppercase transition-colors sm:text-[1.05rem]",
@@ -80,6 +104,8 @@ export function Navbar() {
             >
               Rajavasantha
             </span>
+
+            {/* Welfare Trust */}
             <span
               className={cn(
                 "block text-[0.55rem] font-medium tracking-[0.34em] uppercase transition-colors",
@@ -88,27 +114,64 @@ export function Navbar() {
             >
               Welfare Trust
             </span>
+
+            {/* =================================================
+                REGISTRATION DETAILS
+                Desktop only
+                Starts directly underneath Welfare Trust
+                and aligns with Rajavasantha text
+            ================================================== */}
+            <span
+              className={cn(
+                "mt-1.5 hidden whitespace-nowrap text-[0.52rem] font-semibold tracking-[0.07em] uppercase lg:block",
+                "text-gold",
+              )}
+            >
+              Registered Charitable Trust
+              <span className="mx-1.5">•</span>
+              RJN-4-00372-2026-27
+            </span>
+
           </span>
         </Link>
 
-        <nav aria-label="Primary" className="hidden items-center gap-8 lg:flex">
-          {nav.map((item) => (
-            <Link
-              key={item.to}
-              href={item.to}
-              className={cn(
-                "link-underline text-[0.8rem] font-medium tracking-[0.1em] uppercase transition-colors",
-                light ? "text-ivory/85 hover:text-ivory" : "text-forest-deep/85 hover:text-forest-deep",
-                (item.to === "/" ? pathname === "/" : pathname?.startsWith(item.to)) &&
-                  (light ? "text-gold" : "text-forest-deep"),
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
+        {/* =====================================================
+            DESKTOP NAVIGATION
+            Pushed toward the right
+        ====================================================== */}
+        <nav
+          aria-label="Primary"
+          className="hidden shrink-0 items-center gap-8 lg:ml-auto lg:flex"
+        >
+          {nav.map((item) => {
+            const active =
+              item.to === "/"
+                ? pathname === "/"
+                : pathname?.startsWith(item.to);
+
+            return (
+              <Link
+                key={item.to}
+                href={item.to}
+                className={cn(
+                  "link-underline text-[0.8rem] font-medium tracking-[0.1em] uppercase transition-colors",
+                  light
+                    ? "text-ivory/85 hover:text-ivory"
+                    : "text-forest-deep/85 hover:text-forest-deep",
+                  active &&
+                    (light ? "text-gold" : "text-forest-deep"),
+                )}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
-        <div className="hidden items-center gap-3 lg:flex">
+        {/* =====================================================
+            DESKTOP ACTION BUTTONS
+        ====================================================== */}
+        <div className="hidden shrink-0 items-center gap-3 lg:flex">
           <ActionLink
             to="/volunteer"
             variant={light ? "outlineLight" : "outline"}
@@ -116,12 +179,20 @@ export function Navbar() {
           >
             Volunteer
           </ActionLink>
-          <ActionLink to="/support" variant="gold" className="px-5 py-2.5">
+
+          <ActionLink
+            to="/support"
+            variant="gold"
+            className="px-5 py-2.5"
+          >
             Support the Trust
           </ActionLink>
         </div>
 
-
+        {/* =====================================================
+            MOBILE HEADER
+            UNCHANGED
+        ====================================================== */}
         <div className="flex items-center gap-2 lg:hidden">
           <ActionLink
             to="/support"
@@ -130,6 +201,7 @@ export function Navbar() {
           >
             Support
           </ActionLink>
+
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
@@ -141,11 +213,19 @@ export function Navbar() {
               light ? "text-ivory" : "text-forest-deep",
             )}
           >
-            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {open ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </button>
         </div>
       </div>
 
+      {/* =====================================================
+          MOBILE NAVIGATION
+          COMPLETELY UNCHANGED
+      ====================================================== */}
       {open && (
         <div
           id="mobile-nav"
@@ -161,12 +241,14 @@ export function Navbar() {
                 {item.label}
               </Link>
             ))}
+
             <Link
               href="/founding-team"
               className="border-b border-forest-deep/10 py-4 text-sm tracking-[0.12em] text-forest-soft uppercase"
             >
               Founding Team
             </Link>
+
             <Link
               href="/support"
               className="border-b border-forest-deep/10 py-4 text-sm tracking-[0.12em] text-forest-soft uppercase"
@@ -174,10 +256,12 @@ export function Navbar() {
               Support the Trust
             </Link>
           </nav>
+
           <div className="mt-8 flex flex-col gap-3">
             <ActionLink to="/volunteer" variant="forest">
               Become a Volunteer
             </ActionLink>
+
             <ActionLink to="/support" variant="gold">
               Support the Trust
             </ActionLink>
