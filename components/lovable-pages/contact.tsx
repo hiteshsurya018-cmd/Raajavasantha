@@ -77,7 +77,7 @@ export default function Contact() {
                       {contact.email}
                     </a>
                     <p className="mt-3 text-sm text-muted-foreground">
-                      Phone: +91 88612 49999.
+                      Phone: +91 8861249999
                     </p>
                   </div>
                 </div>
