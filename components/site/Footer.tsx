@@ -87,6 +87,7 @@ export function Footer() {
             >
               <Mail className="h-4 w-4 text-gold" /> {contact.email}
             </a>
+            <a>Phone:+91 88612 49999</a>
 
             <h2 className="eyebrow-plain mt-8">Office</h2>
             <address className="mt-5 flex gap-2 text-sm leading-relaxed text-ivory/75 not-italic">
