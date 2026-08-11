@@ -1,6 +1,18 @@
 import type { Config } from "tailwindcss";
 import animate from "tailwindcss-animate";
 
+const withOpacity = (variable: string) =>
+  (({ opacityValue }: { opacityValue?: string }) => {
+    if (opacityValue === undefined) return `var(${variable})`;
+
+    const opacityPercent = Number(opacityValue) * 100;
+    if (Number.isNaN(opacityPercent)) {
+      return `color-mix(in oklab, var(${variable}) calc(${opacityValue} * 100%), transparent)`;
+    }
+
+    return `color-mix(in oklab, var(${variable}) ${opacityPercent}%, transparent)`;
+  }) as unknown as string;
+
 const config: Config = {
   darkMode: "class",
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}"],
@@ -12,56 +24,56 @@ const config: Config = {
     },
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        background: withOpacity("--background"),
+        foreground: withOpacity("--foreground"),
         card: {
-          DEFAULT: "var(--card)",
-          foreground: "var(--card-foreground)",
+          DEFAULT: withOpacity("--card"),
+          foreground: withOpacity("--card-foreground"),
         },
         popover: {
-          DEFAULT: "var(--popover)",
-          foreground: "var(--popover-foreground)",
+          DEFAULT: withOpacity("--popover"),
+          foreground: withOpacity("--popover-foreground"),
         },
         primary: {
-          DEFAULT: "var(--primary)",
-          foreground: "var(--primary-foreground)",
+          DEFAULT: withOpacity("--primary"),
+          foreground: withOpacity("--primary-foreground"),
         },
         secondary: {
-          DEFAULT: "var(--secondary)",
-          foreground: "var(--secondary-foreground)",
+          DEFAULT: withOpacity("--secondary"),
+          foreground: withOpacity("--secondary-foreground"),
         },
         muted: {
-          DEFAULT: "var(--muted)",
-          foreground: "var(--muted-foreground)",
+          DEFAULT: withOpacity("--muted"),
+          foreground: withOpacity("--muted-foreground"),
         },
         accent: {
-          DEFAULT: "var(--accent)",
-          foreground: "var(--accent-foreground)",
+          DEFAULT: withOpacity("--accent"),
+          foreground: withOpacity("--accent-foreground"),
         },
         destructive: {
-          DEFAULT: "var(--destructive)",
-          foreground: "var(--destructive-foreground)",
+          DEFAULT: withOpacity("--destructive"),
+          foreground: withOpacity("--destructive-foreground"),
         },
-        border: "var(--border)",
-        input: "var(--input)",
-        ring: "var(--ring)",
-        ivory: "var(--ivory)",
-        canvas: "var(--ivory)",
+        border: withOpacity("--border"),
+        input: withOpacity("--input"),
+        ring: withOpacity("--ring"),
+        ivory: withOpacity("--ivory"),
+        canvas: withOpacity("--ivory"),
         forest: {
-          DEFAULT: "var(--forest)",
-          deep: "var(--forest-deep)",
-          soft: "var(--forest-soft)",
+          DEFAULT: withOpacity("--forest"),
+          deep: withOpacity("--forest-deep"),
+          soft: withOpacity("--forest-soft"),
         },
         gold: {
-          DEFAULT: "var(--gold)",
-          soft: "var(--gold-soft)",
+          DEFAULT: withOpacity("--gold"),
+          soft: withOpacity("--gold-soft"),
         },
         ink: {
-          DEFAULT: "var(--foreground)",
-          soft: "var(--muted-foreground)",
+          DEFAULT: withOpacity("--foreground"),
+          soft: withOpacity("--muted-foreground"),
           faint: "color-mix(in oklab, var(--muted-foreground) 70%, transparent)",
         },
-        line: "var(--border)",
+        line: withOpacity("--border"),
       },
       fontFamily: {
         display: ["var(--font-serif)", "serif"],
