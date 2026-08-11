@@ -3,6 +3,9 @@ export const lovableAssets = {
   community: {
     url: "/__l5e/assets-v1/6d70164e-ea8a-4317-bf5c-df06d2f9785a/community.jpg",
   },
+  energy: {
+    url: "/__l5e/assets-v1/fa3d27e5-cebf-4322-b3e8-b8e4d00f355f/energy.jpg",
+  },
   ev: { url: "/__l5e/assets-v1/a83c8ea3-6264-41f6-8ebb-753a3911a73b/ev.jpg" },
   kids: { url: "/__l5e/assets-v1/69d10f4e-0921-4f1b-9d10-64941c553677/kids.jpg" },
   sustain: {
