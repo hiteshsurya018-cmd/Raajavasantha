@@ -1,3 +1,5 @@
+import { Phone } from "lucide-react";
+
 export const siteConfig = {
   name: "Rajavasantha Welfare Trust",
   shortName: "Rajavasantha",
@@ -7,6 +9,7 @@ export const siteConfig = {
   phone: "",
   phoneHref: "",
   email: "info@rajavasanthatrust.org",
+  Phone: "+91 88612 49999"
   location:
     "No.1516/B (46/3), 2nd Floor, RAJAVASANTHA, 8th Main Road, A Block, 2nd Stage, Rajajinagar, Bengaluru - 560010",
   foundingYear: 2026,
