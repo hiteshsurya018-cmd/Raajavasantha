@@ -11,25 +11,58 @@ type LaunchStateOptions = {
   launchAt?: string | null;
 };
 
+/**
+ * Official website launch time:
+ *
+ * 13 August 2026
+ * 11:00 AM
+ * India Standard Time (UTC+05:30)
+ */
+const DEFAULT_LAUNCH_AT = "2026-08-13T11:00:00+05:30";
+
 function currentMs(now: number | Date | undefined) {
-  if (now instanceof Date) return now.getTime();
+  if (now instanceof Date) {
+    return now.getTime();
+  }
+
   return typeof now === "number" ? now : Date.now();
 }
 
-export function parseLaunchAt(launchAt: string | null | undefined) {
-  if (!launchAt) return null;
+export function parseLaunchAt(
+  launchAt: string | null | undefined
+) {
+  if (!launchAt) {
+    return null;
+  }
+
   const parsed = Date.parse(launchAt);
+
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-export function getLaunchState(options: LaunchStateOptions = {}): LaunchState {
+export function getLaunchState(
+  options: LaunchStateOptions = {}
+): LaunchState {
+  /**
+   * Priority:
+   *
+   * 1. Explicit launchAt passed to the function
+   * 2. NEXT_PUBLIC_LAUNCH_AT environment variable
+   * 3. Official hard-coded launch time
+   */
   const launchAt =
     options.launchAt ??
     process.env.NEXT_PUBLIC_LAUNCH_AT ??
-    null;
+    DEFAULT_LAUNCH_AT;
+
   const launchAtMs = parseLaunchAt(launchAt);
+
   const nowMs = currentMs(options.now);
 
+  /**
+   * Invalid configuration should never accidentally
+   * lock the website.
+   */
   if (!launchAt || launchAtMs === null) {
     return {
       launched: true,

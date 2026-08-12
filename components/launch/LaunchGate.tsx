@@ -7,13 +7,41 @@ type LaunchGateProps = {
   now?: number;
 };
 
-export function LaunchGate({ children, now }: LaunchGateProps) {
+export function LaunchGate({
+  children,
+  now,
+}: LaunchGateProps) {
+  /**
+   * Capture the current server time.
+   *
+   * If a time is explicitly provided, it is used instead.
+   * This also makes the component easier to test.
+   */
   const serverNow = now ?? Date.now();
-  const state = getLaunchState({ now: serverNow });
 
+  /**
+   * Read the configured launch time and determine whether
+   * the website should currently be locked or accessible.
+   */
+  const state = getLaunchState({
+    now: serverNow,
+  });
+
+  /**
+   * Once the launch time has arrived, immediately render
+   * the real website.
+   */
   if (state.launched || !state.launchAt) {
     return <>{children}</>;
   }
 
-  return <LaunchCountdown launchAt={state.launchAt} serverNow={serverNow} />;
+  /**
+   * Before launch, display the full-screen countdown.
+   */
+  return (
+    <LaunchCountdown
+      launchAt={state.launchAt}
+      serverNow={serverNow}
+    />
+  );
 }
