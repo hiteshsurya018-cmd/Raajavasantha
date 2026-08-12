@@ -195,7 +195,7 @@ export default function Home() {
               </p>
 
               <h2 className="display-lg mt-6 max-w-2xl text-forest-deep">
-                Twelve areas of work, drawn from the Trust Deed.
+                Twelve areas of work, One shared commitment to community.
               </h2>
             </div>
 
@@ -419,7 +419,7 @@ export default function Home() {
               </p>
 
               <h2 className="display-lg mt-6 max-w-2xl text-forest-deep">
-                The commitments written into our deed.
+                Principles that turn purpose into action.
               </h2>
 
             </div>
@@ -487,23 +487,7 @@ export default function Home() {
               charitable and welfare objectives across communities.
             </p>
 
-            <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
-
-              <ActionLink
-                to="/support"
-                variant="gold"
-              >
-                Support the Trust
-              </ActionLink>
-
-              <ActionLink
-                to="/contact"
-                variant="outlineLight"
-              >
-                Contact the Trust
-              </ActionLink>
-
-            </div>
+            
 
           </Reveal>
 

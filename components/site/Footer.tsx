@@ -151,15 +151,7 @@ export function Footer() {
                   Landmark: {contact.landmark}
                 </span>
 
-                <a
-                  href={mapsUrl}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="link-underline mt-3 inline-flex items-center gap-1.5 text-gold"
-                >
-                  Open in Google Maps
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </a>
+                
               </span>
             </address>
           </div>

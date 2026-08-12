@@ -103,9 +103,7 @@ export default function Contact() {
               </div>
 
               <div className="mt-10 flex flex-wrap gap-3">
-                <ActionAnchor href={`mailto:${contact.email}`} variant="forest">
-                  Email the Trust
-                </ActionAnchor>
+                
                 <ActionAnchor
                   href={mapsUrl}
                   target="_blank"
@@ -122,7 +120,7 @@ export default function Contact() {
                 </ActionLink>
               </div>
 
-              <ActionLink to="/founding-team" variant="outline" className="mt-10">
+              <ActionLink to="/founding-team" variant="maroon" className="mt-10">
                 Meet our Founding Team <ArrowUpRight className="h-4 w-4" />
               </ActionLink>
             </Reveal>

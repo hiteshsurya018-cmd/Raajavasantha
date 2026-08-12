@@ -18,6 +18,7 @@ export const TRUST_NAME = "Rajavasantha Welfare Trust";
 
 export const contact = {
   email: "info@rajavasanthatrust.org",
+
   addressLines: [
     "No.1516/B (46/3), 2nd Floor",
     "RAJAVASANTHA",
@@ -26,14 +27,24 @@ export const contact = {
     "Bengaluru – 560 010",
     "Karnataka, India",
   ],
+
   landmark: "Behind Vishal Bhavan",
+
   mapsQuery:
     "No.1516/B (46/3), 2nd Floor, RAJAVASANTHA, 8th Main Road, A Block, 2nd Stage, Rajajinagar, Bengaluru 560010, Karnataka, India",
 };
 
-export const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-  contact.mapsQuery,
-)}`;
+/*
+ * Exact Rajavasantha Google Maps PLACE listing.
+ *
+ * This intentionally uses the place URL instead of generating
+ * a search URL from mapsQuery.
+ *
+ * Clicking "Open in Google Maps" will therefore open the
+ * Rajavasantha listing itself rather than a coordinate/address search.
+ */
+export const mapsUrl =
+  "https://www.google.com/maps/place/Rajavasantha/@13.0074904,77.5541688,943m/data=!3m2!1e3!4m6!3m5!1s0x3bae3d001fe5c3dd:0xc3ac89a96768943d!8m2!3d13.0074852!4d77.5567491!16s%2Fg%2F11yb9n159y";
 
 export type FocusArea = {
   slug: string;
@@ -49,7 +60,7 @@ export const focusAreas: FocusArea[] = [
     title: "Education & Skill Development",
     icon: GraduationCap,
     summary:
-      "The Trust's objectives include establishing educational institutions, vocational training and skill development facilities for students, youth and the wider public.",
+      "We seek to expand access to education, vocational training and future-ready skills for students, young people and communities.",
     points: [
       "Schools, colleges, coaching and vocational training centres",
       "Digital literacy and computer education programmes",
@@ -60,12 +71,13 @@ export const focusAreas: FocusArea[] = [
       "Research and innovation centres for knowledge sharing",
     ],
   },
+
   {
     slug: "healthcare",
     title: "Healthcare Support",
     icon: HeartPulse,
     summary:
-      "The Trust seeks to promote accessible primary healthcare and health awareness, with particular attention to underserved children, adolescent girls and women.",
+      "We work towards accessible primary healthcare and health awareness, with particular attention to underserved children, adolescent girls and women.",
     points: [
       "Primary healthcare access in rural, tribal and slum areas",
       "Health awareness programmes for underprivileged communities",
@@ -75,12 +87,13 @@ export const focusAreas: FocusArea[] = [
       "Support for child health, adolescent and women's health",
     ],
   },
+
   {
     slug: "women-and-child",
     title: "Women Empowerment & Child Development",
     icon: Users,
     summary:
-      "The Trust is established to support women's empowerment and child development, including early childhood education and the protection of vulnerable women and girls.",
+      "We aim to strengthen women's empowerment and child development through education, nutrition, protection, opportunity and community support.",
     points: [
       "Early childhood education and holistic child development",
       "Nutrition strategies for children and mothers",
@@ -91,12 +104,13 @@ export const focusAreas: FocusArea[] = [
       "Shelter, food, clothing and care for marginalised women and girls",
     ],
   },
+
   {
     slug: "nutrition",
     title: "Nutrition & Food Security",
     icon: Utensils,
     summary:
-      "The Trust's objectives include nutritional support for children in Anganwadis and government schools, and food security programmes for vulnerable communities.",
+      "We seek to strengthen nutrition and food security for children and vulnerable communities through practical, community-focused support.",
     points: [
       "Nutritious meals, milk, fruits and supplements for children",
       "Food distribution programmes and community kitchens",
@@ -105,12 +119,13 @@ export const focusAreas: FocusArea[] = [
       "Nutrition awareness among vulnerable communities",
     ],
   },
+
   {
     slug: "community-development",
     title: "Community Development",
     icon: Building2,
     summary:
-      "The Trust may undertake community infrastructure and welfare facilities that improve educational, social and economic conditions.",
+      "We seek to strengthen communities through inclusive infrastructure, learning spaces, skill development and sustainable local initiatives.",
     points: [
       "Community halls, multipurpose centres and welfare facilities",
       "Libraries, reading rooms and learning centres",
@@ -119,12 +134,13 @@ export const focusAreas: FocusArea[] = [
       "Programmes promoting participation, inclusion and sustainability",
     ],
   },
+
   {
     slug: "agriculture",
     title: "Agriculture & Rural Development",
     icon: Sprout,
     summary:
-      "The Trust seeks to support sustainable agriculture, farmer education and rural livelihoods.",
+      "We support sustainable agriculture, farmer education and rural livelihoods with an emphasis on long-term community resilience.",
     points: [
       "Organic farming and environmentally sustainable practices",
       "Education, training and technical assistance for farmers",
@@ -134,12 +150,13 @@ export const focusAreas: FocusArea[] = [
       "Rural livelihood enhancement and economic development",
     ],
   },
+
   {
     slug: "renewable-energy",
     title: "Renewable Energy",
     icon: Sun,
     summary:
-      "The Trust is established to develop renewable energy projects and to widen access to clean, affordable energy in underserved communities.",
+      "We champion clean and accessible energy solutions that contribute to sustainable development and stronger communities.",
     points: [
       "Solar parks, solar power plants and rooftop solar systems",
       "Wind energy and other sustainable generation initiatives",
@@ -148,12 +165,13 @@ export const focusAreas: FocusArea[] = [
       "Awareness, training and capacity building on renewable energy",
     ],
   },
+
   {
     slug: "environment",
     title: "Environmental Sustainability & Waste Management",
     icon: Recycle,
     summary:
-      "The Trust's objectives include integrated waste management, recycling and environmental awareness for public benefit.",
+      "We promote responsible environmental practices through waste management, recycling, sanitation, conservation and public awareness.",
     points: [
       "Solid waste management and integrated waste projects",
       "Waste segregation, collection, processing and disposal systems",
@@ -163,12 +181,13 @@ export const focusAreas: FocusArea[] = [
       "Conservation initiatives and pollution prevention",
     ],
   },
+
   {
     slug: "sports-youth",
     title: "Sports & Youth Development",
     icon: Trophy,
     summary:
-      "The Trust may develop sporting facilities and youth programmes that build discipline, fitness and leadership.",
+      "We seek to empower young people through sport, mentorship, leadership and opportunities that encourage discipline, confidence and healthy development.",
     points: [
       "Indoor stadiums, sports complexes and playgrounds",
       "Football academies and athletic development programmes",
@@ -177,24 +196,26 @@ export const focusAreas: FocusArea[] = [
       "Youth leadership and personality development programmes",
     ],
   },
+
   {
     slug: "elderly-care",
     title: "Elderly & Senior Care",
     icon: HandHeart,
     summary:
-      "The Trust seeks to improve the quality of life of senior citizens from economically and socially neglected sections of society.",
+      "We seek to improve the quality of life of senior citizens from economically and socially neglected sections through compassionate, needs-based support.",
     points: [
       "Free access to basic amenities such as food and medical care",
       "Care support assessed by doctors and experts",
       "Support shaped around each individual's needs",
     ],
   },
+
   {
     slug: "animal-welfare",
     title: "Animal Welfare",
     icon: PawPrint,
     summary:
-      "The Trust's objectives include veterinary care, livestock welfare and responsible animal care.",
+      "We promote responsible animal care through veterinary support, livestock welfare, rescue, rehabilitation and awareness.",
     points: [
       "Veterinary camps and animal healthcare programmes",
       "Cattle welfare, livestock health and animal husbandry development",
@@ -202,12 +223,13 @@ export const focusAreas: FocusArea[] = [
       "Awareness on animal welfare and responsible care",
     ],
   },
+
   {
     slug: "disaster-relief",
     title: "Disaster Relief & Rehabilitation",
     icon: LifeBuoy,
     summary:
-      "The Trust is established to provide humanitarian assistance and rehabilitation support during floods, drought and other disasters.",
+      "We seek to provide timely humanitarian assistance, relief and rehabilitation support to communities affected by natural disasters and emergencies.",
     points: [
       "Flood relief, rescue operations and rehabilitation support",
       "Drought relief, drinking water support and livelihood assistance",
@@ -219,110 +241,183 @@ export const focusAreas: FocusArea[] = [
   },
 ];
 
-export type Principle = { title: string; body: string };
+export type Principle = {
+  title: string;
+  body: string;
+};
 
 export const principles: Principle[] = [
   {
     title: "Inclusion",
-    body: "The Trust Deed states that the benefits of the Trust's charitable and benevolent services shall be available to all people without discrimination of caste, creed, colour, community, religion or sex.",
+    body:
+      "We believe charitable support should be accessible to all, without discrimination based on caste, creed, colour, community, religion or sex.",
   },
+
   {
     title: "Human Dignity",
-    body: "The Trust's objectives are directed towards vulnerable, underserved and economically or socially disadvantaged persons, with care offered in a manner that respects the dignity of every individual.",
+    body:
+      "We place the dignity of every individual at the heart of our work, with particular attention to vulnerable, underserved and socially or economically disadvantaged communities.",
   },
+
   {
     title: "Access to Opportunity",
-    body: "The deed provides for education, vocational training, scholarships and skill development so that opportunity is not limited by circumstance.",
+    body:
+      "We seek to create pathways to education, vocational training, scholarships and skill development so that opportunity can extend beyond circumstance.",
   },
+
   {
     title: "Community Empowerment",
-    body: "Community halls, learning centres, self-help groups and village development initiatives are set out in the deed as means of strengthening communities from within.",
+    body:
+      "We believe lasting progress begins within communities, supported by learning spaces, self-help initiatives, local development and meaningful participation.",
   },
+
   {
     title: "Education",
-    body: "Education runs through the deed — from early childhood and school education to digital literacy, AI, robotics, STEM and research and innovation.",
+    body:
+      "Education is a cornerstone of our vision — spanning early childhood and school education, digital literacy, AI, robotics, STEM, vocational learning and research.",
   },
+
   {
     title: "Health & Wellbeing",
-    body: "The deed provides for primary healthcare, health awareness, medical assistance and health camps, with particular attention to children, adolescent girls and women.",
+    body:
+      "We are committed to advancing access to primary healthcare, health awareness, medical assistance and community health initiatives, with particular attention to children, adolescent girls and women.",
   },
+
   {
     title: "Environmental Responsibility",
-    body: "Waste management, recycling, e-waste handling, sanitation and pollution prevention are expressly included among the Trust's objectives.",
+    body:
+      "We champion responsible environmental practices through waste management, recycling, e-waste management, sanitation, conservation and pollution prevention.",
   },
+
   {
     title: "Sustainability",
-    body: "Renewable energy, sustainable agriculture, water conservation and sustainable community development are written into the deed as long-term commitments.",
+    body:
+      "We promote long-term solutions through renewable energy, sustainable agriculture, water conservation and environmentally responsible community development.",
   },
+
   {
     title: "Collaboration",
-    body: "The deed contemplates working with government departments, local authorities, educational institutions and other charitable organisations to further its objectives.",
+    body:
+      "We believe meaningful social impact is strengthened through collaboration with government departments, local authorities, educational institutions, charitable organisations and community partners.",
   },
+
   {
     title: "Responsible Governance",
-    body: "The deed sets out provisions for trustees, officers, quorum, accounts and audit — the framework through which the Trust intends to remain accountable.",
+    body:
+      "We uphold responsible governance through defined leadership, sound administration, financial oversight, proper record-keeping and accountability.",
   },
 ];
 
 export const homePrinciples = [
   {
     title: "Inclusion",
-    body: "Charitable benefits are intended for all people, without discrimination of caste, creed, colour, community, religion or sex.",
+    body:
+      "Creating a culture where charitable support is accessible to all, without discrimination.",
   },
+
   {
     title: "Service",
-    body: "The Trust exists for charitable, educational, welfare and public-benefit purposes.",
+    body:
+      "Advancing charitable, educational, welfare and public-benefit initiatives with purpose.",
   },
+
   {
     title: "Dignity",
-    body: "Attention is directed towards vulnerable, underserved and disadvantaged communities.",
+    body:
+      "Putting people first and extending thoughtful support to vulnerable and underserved communities.",
   },
+
   {
     title: "Access",
-    body: "Promoting access to education, healthcare, nutrition and community resources.",
+    body:
+      "Expanding access to education, healthcare, nutrition, skills and community resources.",
   },
+
   {
     title: "Sustainability",
-    body: "Renewable energy, environmental sustainability, sustainable agriculture and community development.",
+    body:
+      "Building long-term solutions through clean energy, environmental responsibility, sustainable agriculture and community development.",
   },
+
   {
     title: "Accountability",
-    body: "The deed contains provisions relating to trustees, accounts, auditing and administration.",
+    body:
+      "Maintaining responsible leadership, transparent administration, financial oversight and sound governance.",
   },
 ];
 
-export type Trustee = { name: string; role: string };
+export type Trustee = {
+  name: string;
+  role: string;
+};
 
 export const leadership: Trustee[] = [
-  { name: "Shruthi R", role: "President" },
-  { name: "Vasantha Raj", role: "Secretary" },
-  { name: "Shashank Rajgopal", role: "Treasurer" },
+  {
+    name: "Shruthi R",
+    role: "President",
+  },
+
+  {
+    name: "Vasantha Raj",
+    role: "Secretary",
+  },
+
+  {
+    name: "Shashank Rajgopal",
+    role: "Treasurer",
+  },
 ];
 
 export const trustees: Trustee[] = [
-  { name: "H Raj Gopal", role: "Trustee" },
-  { name: "Umesh G", role: "Trustee" },
-  { name: "Mamatha B", role: "Trustee" },
-  { name: "Nagalambika B", role: "Trustee" },
-  { name: "Chaluvaraya Swamy", role: "Trustee" },
+  {
+    name: "H Raj Gopal",
+    role: "Trustee",
+  },
+
+  {
+    name: "Umesh G",
+    role: "Trustee",
+  },
+
+  {
+    name: "Mamatha B",
+    role: "Trustee",
+  },
+
+  {
+    name: "Nagalambika B",
+    role: "Trustee",
+  },
+
+  {
+    name: "Chaluvaraya Swamy",
+    role: "Trustee",
+  },
 ];
 
 export const upcomingWork = [
   {
     title: "Renewable Energy & EV Charging Points",
-    body: "The Trust intends to work towards clean energy access — rooftop solar, rural electrification and electric-vehicle charging points as part of its renewable energy objectives.",
+    body:
+      "We intend to work towards clean energy access through rooftop solar, rural electrification and electric-vehicle charging points as part of our renewable energy vision.",
   },
+
   {
     title: "Child Nutrition Programme",
-    body: "Nutritional support for children in Anganwadis and government schools — meals, milk, fruits and supplements — is an early priority within the Trust's nutrition objectives.",
+    body:
+      "Nutritional support for children in Anganwadis and government schools — including meals, milk, fruits and supplements — is an early priority within our nutrition initiatives.",
   },
+
   {
     title: "Sustainable Energy & Awareness",
-    body: "Energy conservation, efficiency and awareness initiatives that help households and institutions adopt sustainable technologies.",
+    body:
+      "We aim to encourage energy conservation, efficiency and awareness initiatives that help households and institutions adopt sustainable technologies.",
   },
+
   {
     title: "Volunteer Network",
-    body: "Building a volunteer network of people willing to contribute skills, time and local knowledge as the Trust's initiatives take shape.",
+    body:
+      "We are building a volunteer network of people who can contribute their skills, time and local knowledge as the Trust's initiatives take shape.",
   },
 ];
 
