@@ -22,25 +22,81 @@ const nav = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+
+  // Controls the large → regular homepage navbar transition.
+  const [heroExpanded, setHeroExpanded] = useState(true);
+
   const pathname = usePathname();
+
+  /*
+   * ==========================================================
+   * PAGE TYPE
+   * ==========================================================
+   *
+   * Homepage:
+   * "/" → special large hero navbar
+   *
+   * Other pages:
+   * "/" → regular navbar
+   */
+
+  const isHomePage = pathname === "/";
+
+  /*
+   * ==========================================================
+   * RESET NAVBAR WHEN PAGE CHANGES
+   * ==========================================================
+   *
+   * Homepage starts expanded.
+   *
+   * Internal pages always start regular.
+   */
 
   useEffect(() => {
     setOpen(false);
+
+    if (pathname === "/") {
+      setHeroExpanded(true);
+    } else {
+      setHeroExpanded(false);
+    }
   }, [pathname]);
+
+  /*
+   * ==========================================================
+   * SCROLL DETECTION
+   * ==========================================================
+   *
+   * Any homepage scroll collapses the large navbar.
+   */
 
   useEffect(() => {
     const onScroll = () => {
-      setScrolled(window.scrollY > 24);
+      const hasScrolled = window.scrollY > 24;
+
+      setScrolled(hasScrolled);
+
+      if (hasScrolled && isHomePage) {
+        setHeroExpanded(false);
+      }
     };
 
     onScroll();
 
-    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("scroll", onScroll, {
+      passive: true,
+    });
 
     return () => {
       window.removeEventListener("scroll", onScroll);
     };
-  }, []);
+  }, [isHomePage]);
+
+  /*
+   * ==========================================================
+   * MOBILE BODY LOCK
+   * ==========================================================
+   */
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -50,35 +106,114 @@ export function Navbar() {
     };
   }, [open]);
 
-  const light = !scrolled && !open;
+  /*
+   * ==========================================================
+   * HOMEPAGE NAVBAR STATES
+   * ==========================================================
+   *
+   * Large:
+   * Homepage + not scrolled + not clicked
+   *
+   * Regular:
+   * Homepage after scroll/click
+   * OR every internal page
+   */
+
+  const heroLarge =
+    isHomePage &&
+    heroExpanded &&
+    !scrolled &&
+    !open;
+
+  /*
+   * Transparent only while the large hero navbar
+   * is sitting over the homepage hero.
+   */
+
+  const transparentHero =
+    isHomePage &&
+    !scrolled &&
+    !open;
+
+  /*
+   * ==========================================================
+   * BRAND COLOR STATE
+   * ==========================================================
+   */
+
+  const brandLight = transparentHero;
 
   return (
     <header
+      onClick={() => {
+        /*
+         * Any navbar click collapses the large homepage
+         * navbar into the regular size.
+         *
+         * This does NOT alter the mobile navigation.
+         */
+        if (isHomePage && heroExpanded) {
+          setHeroExpanded(false);
+        }
+      }}
       className={cn(
         "fixed inset-x-0 top-0 z-50 transition-all duration-500",
-        scrolled || open
-          ? "bg-ivory/95 shadow-[0_1px_0_0_color-mix(in_oklab,var(--forest-deep)_12%,transparent)] backdrop-blur"
-          : "bg-transparent",
+
+        transparentHero
+          ? "bg-transparent"
+          : "bg-ivory/95 shadow-[0_1px_0_0_color-mix(in_oklab,var(--forest-deep)_12%,transparent)] backdrop-blur",
       )}
     >
       {/* =====================================================
           HEADER CONTAINER
-          Full width — no side spaces
       ====================================================== */}
-      <div className="flex w-full items-center gap-4 px-5 lg:px-6">
 
+      <div
+        className={cn(
+          "flex w-full items-center gap-4 px-5 transition-all duration-500 lg:px-6",
+
+          /*
+           * LARGE HOMEPAGE STATE
+           */
+          heroLarge
+            ? "py-3 lg:py-5"
+            : "py-0",
+        )}
+      >
         {/* =====================================================
             LOGO + BRAND
         ====================================================== */}
+
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-3 py-3 lg:ml-7"
+          className={cn(
+            "flex shrink-0 items-center gap-3 py-3 transition-all duration-500 lg:ml-7",
+
+            /*
+             * Slightly larger gap when hero navbar is expanded.
+             */
+            heroLarge
+              ? "lg:gap-4"
+              : "lg:gap-3",
+          )}
           aria-label="Rajavasantha Welfare Trust — home"
         >
+          {/* =================================================
+              LOGO
+          ================================================== */}
+
           <span
             className={cn(
               "flex items-center justify-center rounded-full transition-all duration-500",
-              light ? "h-12 w-12 bg-ivory" : "h-11 w-11 bg-transparent",
+
+              /*
+               * LARGE HERO LOGO
+               */
+              heroLarge
+                ? "h-16 w-16 bg-ivory lg:h-[4.75rem] lg:w-[4.75rem]"
+                : brandLight
+                  ? "h-12 w-12 bg-ivory"
+                  : "h-11 w-11 bg-transparent",
             )}
           >
             <img
@@ -88,28 +223,70 @@ export function Navbar() {
               height={38}
               className={cn(
                 "w-auto transition-all duration-500",
-                light ? "h-8" : "h-9",
+
+                /*
+                 * LARGE HERO LOGO IMAGE
+                 */
+                heroLarge
+                  ? "h-11 lg:h-12"
+                  : brandLight
+                    ? "h-8"
+                    : "h-9",
               )}
             />
           </span>
 
-          <span className="leading-tight">
+          {/* =================================================
+              BRAND TEXT
+          ================================================== */}
 
-            {/* Rajavasantha */}
+          <span
+            className={cn(
+              "leading-tight transition-all duration-500",
+
+              heroLarge
+                ? "lg:scale-105 lg:origin-left"
+                : "scale-100",
+            )}
+          >
+            {/* =================================================
+                RAJAVASANTHA
+            ================================================== */}
+
             <span
               className={cn(
-                "block font-display text-[0.95rem] font-semibold tracking-[0.16em] uppercase transition-colors sm:text-[1.05rem]",
-                light ? "text-ivory" : "text-forest-deep",
+                "block font-display font-semibold tracking-[0.16em] uppercase transition-all duration-500",
+
+                /*
+                 * LARGE HERO NAME
+                 */
+                heroLarge
+                  ? "text-[1.2rem] sm:text-[1.35rem] lg:text-[1.45rem]"
+                  : "text-[0.95rem] sm:text-[1.05rem]",
+
+                brandLight
+                  ? "text-ivory"
+                  : "text-forest-deep",
               )}
             >
               Rajavasantha
             </span>
 
-            {/* Welfare Trust */}
+            {/* =================================================
+                WELFARE TRUST
+            ================================================== */}
+
             <span
               className={cn(
-                "block text-[0.55rem] font-medium tracking-[0.34em] uppercase transition-colors",
-                light ? "text-gold" : "text-forest-soft/80",
+                "block font-medium uppercase transition-all duration-500",
+
+                heroLarge
+                  ? "text-[0.68rem] tracking-[0.38em]"
+                  : "text-[0.55rem] tracking-[0.34em]",
+
+                brandLight
+                  ? "text-gold"
+                  : "text-forest-soft/80",
               )}
             >
               Welfare Trust
@@ -117,31 +294,45 @@ export function Navbar() {
 
             {/* =================================================
                 REGISTRATION DETAILS
-                Desktop only
-                Starts directly underneath Welfare Trust
-                and aligns with Rajavasantha text
             ================================================== */}
+
             <span
               className={cn(
-                "mt-1.5 hidden whitespace-nowrap text-[0.52rem] font-semibold tracking-[0.07em] uppercase lg:block",
-                "text-gold",
+                "hidden whitespace-nowrap font-semibold tracking-[0.07em] uppercase text-gold transition-all duration-500 lg:block",
+
+                heroLarge
+                  ? "mt-2 text-[0.6rem]"
+                  : "mt-1.5 text-[0.52rem]",
               )}
             >
               Registered Charitable Trust
-              <span className="mx-1.5">•</span>
+              <span
+                className={cn(
+                  heroLarge
+                    ? "mx-2"
+                    : "mx-1.5",
+                )}
+              >
+                •
+              </span>
               RJN-4-00372-2026-27
             </span>
-
           </span>
         </Link>
 
         {/* =====================================================
             DESKTOP NAVIGATION
-            Pushed toward the right
         ====================================================== */}
+
         <nav
           aria-label="Primary"
-          className="hidden shrink-0 items-center gap-8 lg:ml-auto lg:flex"
+          className={cn(
+            "hidden shrink-0 items-center lg:ml-auto lg:flex",
+
+            heroLarge
+              ? "gap-9"
+              : "gap-8",
+          )}
         >
           {nav.map((item) => {
             const active =
@@ -154,12 +345,24 @@ export function Navbar() {
                 key={item.to}
                 href={item.to}
                 className={cn(
-                  "link-underline text-[0.8rem] font-medium tracking-[0.1em] uppercase transition-colors",
-                  light
-                    ? "text-ivory/85 hover:text-ivory"
+                  "link-underline font-medium tracking-[0.1em] uppercase transition-all duration-500",
+
+                  /*
+                   * Slightly larger navigation during
+                   * initial hero state.
+                   */
+                  heroLarge
+                    ? "text-[0.85rem]"
+                    : "text-[0.8rem]",
+
+                  brandLight
+                    ? "text-ivory/90 hover:text-ivory"
                     : "text-forest-deep/85 hover:text-forest-deep",
+
                   active &&
-                    (light ? "text-gold" : "text-forest-deep"),
+                    (brandLight
+                      ? "text-gold"
+                      : "text-forest-deep"),
                 )}
               >
                 {item.label}
@@ -171,19 +374,48 @@ export function Navbar() {
         {/* =====================================================
             DESKTOP ACTION BUTTONS
         ====================================================== */}
-        <div className="hidden shrink-0 items-center gap-3 lg:flex">
+
+        <div
+          className={cn(
+            "hidden shrink-0 items-center lg:flex",
+
+            heroLarge
+              ? "gap-3.5"
+              : "gap-3",
+          )}
+        >
+          {/* Volunteer */}
+
           <ActionLink
             to="/volunteer"
-            variant={light ? "outlineLight" : "outline"}
-            className="px-5 py-2.5"
+            variant={
+              brandLight
+                ? "outlineLight"
+                : "outline"
+            }
+            className={cn(
+              "transition-all duration-500",
+
+              heroLarge
+                ? "px-5 py-3"
+                : "px-5 py-2.5",
+            )}
           >
             Volunteer
           </ActionLink>
 
+          {/* Support */}
+
           <ActionLink
             to="/support"
             variant="gold"
-            className="px-5 py-2.5"
+            className={cn(
+              "transition-all duration-500",
+
+              heroLarge
+                ? "px-5 py-3"
+                : "px-5 py-2.5",
+            )}
           >
             Support the Trust
           </ActionLink>
@@ -193,6 +425,7 @@ export function Navbar() {
             MOBILE HEADER
             UNCHANGED
         ====================================================== */}
+
         <div className="flex items-center gap-2 lg:hidden">
           <ActionLink
             to="/support"
@@ -204,13 +437,28 @@ export function Navbar() {
 
           <button
             type="button"
-            onClick={() => setOpen((v) => !v)}
+            onClick={(event) => {
+              /*
+               * Prevent the header click handler from
+               * interfering with the mobile menu.
+               */
+              event.stopPropagation();
+
+              setOpen((v) => !v);
+            }}
             aria-expanded={open}
             aria-controls="mobile-nav"
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label={
+              open
+                ? "Close menu"
+                : "Open menu"
+            }
             className={cn(
               "flex h-11 w-11 items-center justify-center transition-colors",
-              light ? "text-ivory" : "text-forest-deep",
+
+              brandLight
+                ? "text-ivory"
+                : "text-forest-deep",
             )}
           >
             {open ? (
@@ -222,16 +470,21 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* =====================================================
+      {/* =======================================================
           MOBILE NAVIGATION
           COMPLETELY UNCHANGED
-      ====================================================== */}
+      ======================================================== */}
+
       {open && (
         <div
           id="mobile-nav"
           className="h-[calc(100dvh-4.5rem)] overflow-y-auto border-t border-forest-deep/10 bg-ivory px-6 pt-6 pb-16 lg:hidden"
+          onClick={(event) => event.stopPropagation()}
         >
-          <nav aria-label="Mobile" className="flex flex-col">
+          <nav
+            aria-label="Mobile"
+            className="flex flex-col"
+          >
             {nav.map((item) => (
               <Link
                 key={item.to}
@@ -258,11 +511,17 @@ export function Navbar() {
           </nav>
 
           <div className="mt-8 flex flex-col gap-3">
-            <ActionLink to="/volunteer" variant="forest">
+            <ActionLink
+              to="/volunteer"
+              variant="forest"
+            >
               Become a Volunteer
             </ActionLink>
 
-            <ActionLink to="/support" variant="gold">
+            <ActionLink
+              to="/support"
+              variant="gold"
+            >
               Support the Trust
             </ActionLink>
           </div>
