@@ -3,8 +3,8 @@ import { contact, mapsUrl } from "@/data/site";
 import { ActionAnchor } from "./Action";
 
 export function MapPreview() {
-  const latitude = 13.0074852;
-  const longitude = 77.5567491;
+const latitude = 13.0074852;
+const longitude = 77.5567491;
 
   const mapsEmbedUrl =
     `https://www.google.com/maps?q=${latitude},${longitude}&z=17&output=embed`;
