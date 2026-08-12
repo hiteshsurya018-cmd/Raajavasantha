@@ -19,10 +19,10 @@ export const TRUST_NAME = "Rajavasantha Welfare Trust";
 export const contact = {
   email: "info@rajavasanthatrust.org",
   addressLines: [
-    "No.1516/B (46/3), 2nd Floor,",
-    '"RAJAVASANTHA",',
-    "8th Main Road, 'A' Block,",
-    "2nd Stage, Rajajinagar,",
+    "No.1516/B (46/3), 2nd Floor",
+    "RAJAVASANTHA",
+    "8th Main Road, 'A' Block",
+    "2nd Stage, Rajajinagar",
     "Bengaluru – 560 010",
     "Karnataka, India",
   ],
