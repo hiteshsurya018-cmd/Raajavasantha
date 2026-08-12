@@ -160,17 +160,17 @@ export function Footer() {
             Mobile only
         ========================== */}
         <div className="mt-10 border-t border-ivory/10 pt-6 text-center md:hidden">
-          <a
-            href="https://www.rajavasanthatrust.org/"
-            target="_blank"
-            rel="noreferrer noopener"
-            className="inline-block text-[0.62rem] font-semibold tracking-[0.12em] text-ivory/60 transition-colors hover:text-gold"
-          >
-            Registered Charitable Trust
-            <span className="mx-2 text-gold/70">•</span>
-            RJN-4-00372-2026-27
-          </a>
-        </div>
+  <a
+    href="https://www.rajavasanthatrust.org/"
+    target="_blank"
+    rel="noreferrer noopener"
+    className="inline-block text-[0.62rem] font-semibold tracking-[0.12em] text-gold transition-colors hover:text-gold-soft"
+  >
+    Registered Charitable Trust
+    <span className="mx-2 text-gold/70">•</span>
+    RJN-4-00372-2026-27
+  </a>
+</div>
 
         {/* =========================
             COPYRIGHT
