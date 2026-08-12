@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, ExternalLink, Mail, MapPin } from "lucide-react";
-import { contact, mapsUrl } from "@/data/site";
+import { ArrowRight, Mail, MapPin } from "lucide-react";
+import { contact } from "@/data/site";
 import { lovableAssets } from "@/lib/lovable-assets";
 
 const logo = lovableAssets.logo;
@@ -66,7 +66,7 @@ export function Footer() {
 
             <Link
               href="/founding-team"
-              className="link-underline mt-6 inline-flex text-sm font-medium text-gold"
+              className="link-underline mt-6 inline-flex items-center gap-2 text-sm font-medium text-gold"
             >
               Meet our Founding Team
               <ArrowRight className="h-4 w-4" />
@@ -150,17 +150,32 @@ export function Footer() {
                 <span className="mt-1 block text-ivory/55">
                   Landmark: {contact.landmark}
                 </span>
-
-                
               </span>
             </address>
           </div>
         </div>
 
         {/* =========================
+            MOBILE REGISTRATION
+            Mobile only
+        ========================== */}
+        <div className="mt-10 border-t border-ivory/10 pt-6 text-center md:hidden">
+          <a
+            href="https://www.rajavasanthatrust.org/"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="inline-block text-[0.62rem] font-semibold tracking-[0.12em] text-ivory/60 transition-colors hover:text-gold"
+          >
+            Registered Charitable Trust
+            <span className="mx-2 text-gold/70">•</span>
+            RJN-4-00372-2026-27
+          </a>
+        </div>
+
+        {/* =========================
             COPYRIGHT
         ========================== */}
-        <p className="mt-12 border-t border-ivory/15 pt-8 text-xs tracking-[0.08em] text-ivory/50">
+        <p className="mt-10 border-t border-ivory/15 pt-8 text-xs tracking-[0.08em] text-ivory/50">
           © 2026 Rajavasantha Welfare Trust. All rights reserved.
         </p>
       </div>
