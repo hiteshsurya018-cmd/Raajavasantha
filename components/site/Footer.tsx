@@ -12,7 +12,6 @@ const columns = [
       { label: "About", to: "/about" },
       { label: "Our Focus Areas", to: "/focus-areas" },
       { label: "Principles", to: "/principles" },
-      { label: "Volunteer", to: "/volunteer" },
       { label: "Support", to: "/support" },
       { label: "Contact", to: "/contact" },
     ],
