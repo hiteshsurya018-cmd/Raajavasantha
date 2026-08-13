@@ -4,14 +4,31 @@ export const siteConfig = {
   name: "Rajavasantha Welfare Trust",
   shortName: "Rajavasantha",
   canonicalOrigin: "https://rajavasantha.org",
+
   description:
     "Rajavasantha Welfare Trust is a Bengaluru-based charitable trust preparing transparent community programmes across education, health, livelihoods, environment and relief.",
-  phone: "",
-  phoneHref: "",
+
+  phone: "+91 88612 49999",
+  phoneHref: "tel:+918861249999",
+
+  phoneNumbers: [
+    {
+      label: "Mobile",
+      number: "+91 88612 49999",
+      href: "tel:+918861249999",
+    },
+    {
+      label: "Landline",
+      number: "+91 80-23479369",
+      href: "tel:+918023479369",
+    },
+  ],
+
   email: "info@rajavasanthatrust.org",
-  Phone: "+91 88612 49999",
+
   location:
     "No.1516/B (46/3), 2nd Floor, RAJAVASANTHA, 8th Main Road, A Block, 2nd Stage, Rajajinagar, Bengaluru - 560010",
+
   foundingYear: 2026,
 } as const;
 
@@ -42,6 +59,7 @@ export const publicFacts = {
       sub: "Trust-controlled storage is planned",
     },
   ],
+
   foundingSnapshot: [
     { value: "2026", label: "Year established" },
     { value: "9", label: "Focus areas planned" },

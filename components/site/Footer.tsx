@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Mail, MapPin } from "lucide-react";
+import { ArrowRight, Mail, MapPin, Phone } from "lucide-react";
 import { contact } from "@/data/site";
 import { lovableAssets } from "@/lib/lovable-assets";
 
@@ -110,19 +110,28 @@ export function Footer() {
               {contact.email}
             </a>
 
-            {/* Phone */}
+            {/* Mobile */}
             <a
               href="tel:+918861249999"
-              className="mt-3 inline-flex items-center gap-2 text-sm text-ivory/80 transition-colors hover:text-gold"
+              className="mt-3 flex items-center gap-2 text-sm text-ivory/80 transition-colors hover:text-gold"
             >
-              <span className="text-base text-gold">☏</span>
+              <Phone className="h-4 w-4 text-gold" />
               +91 88612 49999
+            </a>
+
+            {/* Landline */}
+            <a
+              href="tel:+918023479369"
+              className="mt-3 flex items-center gap-2 text-sm text-ivory/80 transition-colors hover:text-gold"
+            >
+              <Phone className="h-4 w-4 text-gold" />
+              +91 80-23479369
             </a>
 
             {/* Office */}
             <h2 className="eyebrow-plain mt-8">Office</h2>
 
-            {/* Small Google Maps Preview */}
+            {/* Google Maps Preview */}
             <div className="mt-5 overflow-hidden border border-ivory/15 bg-forest-deep">
               <div className="relative h-40 w-full">
                 <iframe
@@ -160,17 +169,17 @@ export function Footer() {
             Mobile only
         ========================== */}
         <div className="mt-10 border-t border-ivory/10 pt-6 text-center md:hidden">
-  <a
-    href="https://www.rajavasanthatrust.org/"
-    target="_blank"
-    rel="noreferrer noopener"
-    className="inline-block text-[0.62rem] font-semibold tracking-[0.12em] text-gold transition-colors hover:text-gold-soft"
-  >
-    Registered Charitable Trust
-    <span className="mx-2 text-gold/70">•</span>
-    RJN-4-00372-2026-27
-  </a>
-</div>
+          <a
+            href="https://www.rajavasanthatrust.org/"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="inline-block text-[0.62rem] font-semibold tracking-[0.12em] text-gold transition-colors hover:text-gold-soft"
+          >
+            Registered Charitable Trust
+            <span className="mx-2 text-gold/70">•</span>
+            RJN-4-00372-2026-27
+          </a>
+        </div>
 
         {/* =========================
             COPYRIGHT
