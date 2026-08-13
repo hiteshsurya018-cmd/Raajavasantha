@@ -18,7 +18,7 @@ type LaunchStateOptions = {
  * 11:00 AM
  * India Standard Time (UTC+05:30)
  */
-const DEFAULT_LAUNCH_AT = "2026-08-13T11:00:00+05:30";
+const DEFAULT_LAUNCH_AT = "2026-08-13T12:00:00+05:30";
 
 function currentMs(now: number | Date | undefined) {
   if (now instanceof Date) {
