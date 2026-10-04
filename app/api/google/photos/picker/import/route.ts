@@ -272,12 +272,12 @@ export async function POST(request: Request) {
     /*
      * The Picker baseUrl is temporary.
      *
-     * Append d=true so Google returns the actual
-     * downloadable media bytes.
+     * Append =d so Google returns the full downloadable
+     * media bytes.
      */
     const downloadUrl = isVideo
       ? `${baseUrl}=dv`
-      : `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}d=true`;
+      : `${baseUrl}=d`;
 
     const mediaResponse = await fetch(
       downloadUrl,
