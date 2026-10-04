@@ -4,7 +4,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://rajavasantha.org"),
+  metadataBase: new URL("https://rajavasanthatrust.org"),
   title: {
     default: "Rajavasantha Welfare Trust | Community Welfare & Social Development",
     template: "%s | Rajavasantha Welfare Trust",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     title: "Rajavasantha Welfare Trust | Community Welfare & Social Development",
     description:
       "A Bengaluru-based welfare trust working towards inclusive social development through education, healthcare, community welfare, environmental sustainability and humanitarian action.",
-    url: "https://rajavasantha.org",
+    url: "https://rajavasanthatrust.org",
     siteName: "Rajavasantha Welfare Trust",
     images: [
       {
@@ -78,7 +78,7 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "NGO",
               name: "Rajavasantha Welfare Trust",
-              url: "https://rajavasantha.org",
+              url: "https://rajavasanthatrust.org",
               description:
                 "A Bengaluru-based welfare trust established for charitable, educational, welfare and public-benefit purposes.",
               email: "info@rajavasanthatrust.org",

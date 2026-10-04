@@ -16,7 +16,7 @@ const routes = [
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = "https://rajavasantha.org";
+  const base = "https://rajavasanthatrust.org";
   const projectRoutes = projects.map((project) => ({
     path: `/projects/${project.slug}`,
     priority: project.isPlaceholder ? 0.2 : 0.7,

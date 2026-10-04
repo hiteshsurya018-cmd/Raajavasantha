@@ -3,7 +3,7 @@ import { Phone } from "lucide-react";
 export const siteConfig = {
   name: "Rajavasantha Welfare Trust",
   shortName: "Rajavasantha",
-  canonicalOrigin: "https://rajavasantha.org",
+  canonicalOrigin: "https://rajavasanthatrust.org",
 
   description:
     "Rajavasantha Welfare Trust is a Bengaluru-based charitable trust preparing transparent community programmes across education, health, livelihoods, environment and relief.",
