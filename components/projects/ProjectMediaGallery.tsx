@@ -166,6 +166,7 @@ export function ProjectMediaGallery({
                     alt={selectedMedia.alt}
                     fill
                     priority
+                    unoptimized
                     sizes="100vw"
                     className="object-contain"
                   />
