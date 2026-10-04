@@ -70,7 +70,7 @@ export function ProjectDiscovery({
 
   return (
     <section className="bg-ivory" id="project-discovery">
-      <div className="mx-auto max-w-[80rem] px-5 pb-16 pt-36 lg:px-10 lg:pb-24 lg:pt-40">
+      <div className="mx-auto max-w-[80rem] px-5 pb-16 pt-24 lg:px-10 lg:pb-24 lg:pt-28">
         <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:gap-16">
           <div>
             <p className="eyebrow">Discover</p>
@@ -148,7 +148,7 @@ export function ProjectDiscovery({
         {featuredProjects.length > 0 && (
           <div className="mt-16 border-y border-forest-deep/10 py-12 lg:py-16">
             <p className="eyebrow">Featured projects</p>
-            <div className="mt-8 grid gap-6 md:grid-cols-2">
+            <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {featuredProjects.map((project, index) => (
                 <ProjectCard
                   key={project.slug}
@@ -181,7 +181,7 @@ export function ProjectDiscovery({
         </div>
 
         {filteredProjects.length > 0 ? (
-          <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {filteredProjects.map((project, index) => (
               <ProjectCard
                 key={project.slug}
