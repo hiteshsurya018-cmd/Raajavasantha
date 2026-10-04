@@ -14,6 +14,7 @@ const nav = [
   { label: "Home", to: "/" },
   { label: "About", to: "/about" },
   { label: "Our Focus", to: "/focus-areas" },
+  { label: "Projects", to: "/projects" },
   { label: "Principles", to: "/principles" },
   { label: "Volunteer", to: "/volunteer" },
   { label: "Contact", to: "/contact" },

@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "test": "tsx --test tests/**/*.test.ts",
     "db:migrate": "node --env-file=.env.local scripts/migrate.mjs"
   },
   "dependencies": {
@@ -27,6 +28,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-leaflet": "^5.0.0",
+    "sharp": "^0.35.5",
     "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
@@ -40,6 +42,7 @@
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.14",
     "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.23.15",
     "typescript": "^5.6.3"
   },
   "optionalDependencies": {

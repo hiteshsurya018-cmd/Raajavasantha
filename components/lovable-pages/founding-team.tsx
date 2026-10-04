@@ -57,69 +57,97 @@ export default function FoundingTeam() {
           </div>
 
           {/* =========================
-    BOARD OF TRUSTEES
-========================== */}
-<Reveal className="mt-20">
-  <p className="eyebrow">Board of Trustees</p>
-</Reveal>
+              BOARD OF TRUSTEES
+          ========================== */}
+          <Reveal className="mt-20">
+            <p className="eyebrow">Board of Trustees</p>
+          </Reveal>
 
-{/* First row — 2 centered cards */}
-<div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-6 md:gap-6">
-  {trustees.slice(0, 2).map((person, i) => (
-    <Reveal
-      key={person.name}
-      delay={i * 70}
-      className={i === 0 ? "md:col-span-2 md:col-start-2" : "md:col-span-2"}
-    >
-      <article className="flex aspect-square h-full flex-col items-start border border-forest-deep/12 bg-card p-2.5 md:aspect-auto md:min-h-[290px] md:p-10 lg:p-12">
-        {/* Avatar */}
-        <span
-          aria-hidden="true"
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-forest-deep font-display text-xl text-gold md:h-24 md:w-24 md:text-3xl"
-        >
-          {initials(person.name)}
-        </span>
+          {/* First row — 2 centered cards */}
+          <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-6 md:gap-6">
+            {trustees.slice(0, 2).map((person, i) => (
+              <Reveal
+                key={person.name}
+                delay={i * 70}
+                className={
+                  i === 0
+                    ? "md:col-span-2 md:col-start-2"
+                    : "md:col-span-2"
+                }
+              >
+                <article className="flex aspect-square h-full flex-col items-start border border-forest-deep/12 bg-card p-2.5 md:aspect-auto md:min-h-[290px] md:p-10 lg:p-12">
 
-        <h2 className="mt-auto break-words font-display text-lg leading-5 text-forest-deep md:mt-8 md:break-normal md:text-3xl md:leading-9">
-          {person.name}
-        </h2>
+                  {/* Mobile photo placeholder */}
+                  <div className="flex aspect-[4/3] w-full items-center justify-center bg-forest-deep/10 md:hidden">
+                    <span
+                      aria-hidden="true"
+                      className="font-display text-4xl text-forest-deep/30"
+                    >
+                      {initials(person.name)}
+                    </span>
+                  </div>
 
-        <p className="mt-1 text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-forest-soft md:mt-2 md:text-[0.72rem] md:tracking-[0.2em]">
-          {person.role}
-        </p>
-      </article>
-    </Reveal>
-  ))}
-</div>
+                  {/* Desktop avatar — unchanged */}
+                  <span
+                    aria-hidden="true"
+                    className="hidden h-14 w-14 items-center justify-center rounded-full bg-forest-deep font-display text-xl text-gold md:flex md:h-24 md:w-24 md:text-3xl"
+                  >
+                    {initials(person.name)}
+                  </span>
 
-{/* Second row — 3 cards */}
-<div className="mt-3 grid grid-cols-4 gap-3 md:mt-6 md:grid-cols-3 md:gap-6">
-  {trustees.slice(2, 5).map((person, i) => (
-    <Reveal
-      key={person.name}
-      delay={i * 70}
-      className={`col-span-2 md:col-span-1 ${i === 2 ? "col-start-2 md:col-start-auto" : ""}`}
-    >
-      <article className="flex aspect-square h-full flex-col items-start border border-forest-deep/12 bg-card p-2.5 md:aspect-auto md:min-h-[290px] md:p-10 lg:p-12">
-        {/* Avatar */}
-        <span
-          aria-hidden="true"
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-forest-deep font-display text-xl text-gold md:h-24 md:w-24 md:text-3xl"
-        >
-          {initials(person.name)}
-        </span>
+                  <h2 className="mt-auto break-words font-display text-lg leading-5 text-forest-deep md:mt-8 md:break-normal md:text-3xl md:leading-9">
+                    {person.name}
+                  </h2>
 
-        <h2 className="mt-auto break-words font-display text-lg leading-5 text-forest-deep md:mt-8 md:break-normal md:text-3xl md:leading-9">
-          {person.name}
-        </h2>
+                  <p className="mt-1 text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-forest-soft md:mt-2 md:text-[0.72rem] md:tracking-[0.2em]">
+                    {person.role}
+                  </p>
+                </article>
+              </Reveal>
+            ))}
+          </div>
 
-        <p className="mt-1 text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-forest-soft md:mt-2 md:text-[0.72rem] md:tracking-[0.2em]">
-          {person.role}
-        </p>
-      </article>
-    </Reveal>
-  ))}
-</div>
+          {/* Second row — 3 cards */}
+          <div className="mt-3 grid grid-cols-4 gap-3 md:mt-6 md:grid-cols-3 md:gap-6">
+            {trustees.slice(2, 5).map((person, i) => (
+              <Reveal
+                key={person.name}
+                delay={i * 70}
+                className={`col-span-2 md:col-span-1 ${
+                  i === 2 ? "col-start-2 md:col-start-auto" : ""
+                }`}
+              >
+                <article className="flex aspect-square h-full flex-col items-start border border-forest-deep/12 bg-card p-2.5 md:aspect-auto md:min-h-[290px] md:p-10 lg:p-12">
+
+                  {/* Mobile photo placeholder */}
+                  <div className="flex aspect-[4/3] w-full items-center justify-center bg-forest-deep/10 md:hidden">
+                    <span
+                      aria-hidden="true"
+                      className="font-display text-4xl text-forest-deep/30"
+                    >
+                      {initials(person.name)}
+                    </span>
+                  </div>
+
+                  {/* Desktop avatar — unchanged */}
+                  <span
+                    aria-hidden="true"
+                    className="hidden h-14 w-14 items-center justify-center rounded-full bg-forest-deep font-display text-xl text-gold md:flex md:h-24 md:w-24 md:text-3xl"
+                  >
+                    {initials(person.name)}
+                  </span>
+
+                  <h2 className="mt-auto break-words font-display text-lg leading-5 text-forest-deep md:mt-8 md:break-normal md:text-3xl md:leading-9">
+                    {person.name}
+                  </h2>
+
+                  <p className="mt-1 text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-forest-soft md:mt-2 md:text-[0.72rem] md:tracking-[0.2em]">
+                    {person.role}
+                  </p>
+                </article>
+              </Reveal>
+            ))}
+          </div>
 
           {/* =========================
               FOOTER INFORMATION

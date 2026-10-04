@@ -222,14 +222,20 @@ export default async function ProjectDetailPage({ params }: ProjectDetailProps) 
                   key={`${image.src}-${image.alt}`}
                   className="border border-forest-deep/10 bg-ivory"
                 >
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    <Image
-                      src={image.src}
-                      alt={image.alt}
-                      fill
-                      sizes="(min-width: 768px) 33vw, 100vw"
-                      className="object-cover"
-                    />
+                  <div className="relative aspect-[4/3] overflow-hidden bg-black">
+                    {image.resourceType === "video" ? (
+                      <video controls preload="metadata" playsInline aria-label={image.alt} className="h-full w-full object-contain">
+                        <source src={image.src} type={image.mimeType ?? "video/mp4"} />
+                      </video>
+                    ) : (
+                      <Image
+                        src={image.src}
+                        alt={image.alt}
+                        fill
+                        sizes="(min-width: 768px) 33vw, 100vw"
+                        className="object-cover"
+                      />
+                    )}
                   </div>
                   {image.caption && (
                     <figcaption className="p-4 text-xs leading-relaxed text-muted-foreground">

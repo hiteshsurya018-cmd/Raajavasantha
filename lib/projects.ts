@@ -41,6 +41,7 @@ type ProjectRow = {
   cover_image_alt: string | null;
   status: TrustProject["status"];
   featured: boolean;
+  is_public: boolean;
   beneficiaries: string | null;
   created_at: string;
   updated_at: string;
@@ -67,6 +68,8 @@ type GalleryImageRow = {
   caption: string | null;
   source: string;
   sort_order: number;
+  resource_type: string | null;
+  mime_type: string | null;
 };
 
 type ReferenceRow = {
@@ -136,6 +139,8 @@ function mapProject(
       alt: image.alt,
       caption: image.caption ?? undefined,
       source: mapImageSource(image.source),
+      resourceType: image.resource_type === "video" ? "video" as const : "image" as const,
+      mimeType: image.mime_type ?? undefined,
     }));
 
   const coverImage = row.cover_image
@@ -146,7 +151,7 @@ function mapProject(
           `${row.title} — Rajavasantha Welfare Trust`,
         source: "local" as const,
       }
-    : mappedGallery[0] ?? null;
+    : mappedGallery.find((item) => item.resourceType !== "video") ?? null;
 
   return {
     id: row.id,
@@ -228,10 +233,12 @@ async function loadProjectsFromDatabase(): Promise<TrustProject[]> {
       cover_image_alt,
       status,
       featured,
+      is_public,
       beneficiaries,
       created_at,
       updated_at
     FROM projects
+    WHERE is_public = true
     ORDER BY
       featured DESC,
       year DESC NULLS LAST,
@@ -271,7 +278,9 @@ async function loadProjectsFromDatabase(): Promise<TrustProject[]> {
           alt,
           caption,
           source,
-          sort_order
+          sort_order,
+          resource_type,
+          mime_type
     FROM project_gallery_images
     WHERE approved = true
     ORDER BY sort_order ASC
@@ -312,6 +321,7 @@ export async function getProjects(): Promise<TrustProject[]> {
 
 export async function getProjectBySlug(
   slug: string,
+  includePrivate = false,
 ): Promise<TrustProject | null> {
   const projectRows = (await sql`
     SELECT
@@ -334,11 +344,13 @@ export async function getProjectBySlug(
       cover_image_alt,
       status,
       featured,
+      is_public,
       beneficiaries,
       created_at,
       updated_at
     FROM projects
     WHERE slug = ${slug}
+      AND (${includePrivate} = true OR is_public = true)
     LIMIT 1
   `) as ProjectRow[];
 
@@ -379,7 +391,9 @@ export async function getProjectBySlug(
           alt,
           caption,
           source,
-          sort_order
+          sort_order,
+          resource_type,
+          mime_type
         FROM project_gallery_images
         WHERE project_id = ${project.id}
           AND approved = true
@@ -411,6 +425,7 @@ export async function getProjectSlugs(): Promise<string[]> {
   const result = (await sql`
     SELECT slug
     FROM projects
+    WHERE is_public = true
     ORDER BY
       featured DESC,
       year DESC NULLS LAST,

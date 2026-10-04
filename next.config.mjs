@@ -26,7 +26,6 @@ const nextConfig = {
     return [
       { source: "/donate", destination: "/support", permanent: false },
       { source: "/our-work", destination: "/focus-areas", permanent: false },
-      { source: "/gallery", destination: "/", permanent: false },
       { source: "/news", destination: "/", permanent: false },
       { source: "/documents", destination: "/contact", permanent: false },
     ];

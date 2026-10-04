@@ -171,10 +171,9 @@ export async function GET(
      *
      * This happens only on the server.
      */
-    const refreshToken =
-      decryptGoogleToken(
-        rows[0].refresh_token,
-      );
+    let refreshToken: string;
+    try { refreshToken = decryptGoogleToken(rows[0].refresh_token); }
+    catch { return Response.json({ success: false, error: "Google Photos authorization expired. Please reconnect." }, { status: 409 }); }
 
     /*
      * Read Google OAuth credentials.
@@ -387,18 +386,13 @@ export async function GET(
         mediaData.nextPageToken ?? null,
     });
   } catch (error) {
-    console.error(
-      "Google Photos Picker media items request failed:",
-      error,
-    );
+    console.error("Google Photos Picker media items request failed", { name: error instanceof Error ? error.name : "unknown" });
 
     return Response.json(
       {
         success: false,
         error:
-          error instanceof Error
-            ? error.message
-            : "Google Photos Picker media items request failed.",
+          "Google Photos Picker media items request failed.",
       },
       { status: 500 },
     );

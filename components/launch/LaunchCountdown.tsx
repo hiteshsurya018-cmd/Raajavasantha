@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { formatLaunchClock, getLaunchState } from "@/lib/launch";
 import { lovableAssets } from "@/lib/lovable-assets";
 
@@ -48,22 +48,22 @@ export function LaunchCountdown({
   launchAt,
   serverNow,
 }: LaunchCountdownProps) {
-  const origin = React.useRef<{
+  const origin = useRef<{
     serverNow: number;
     perfNow: number;
   } | null>(null);
 
-  const celebrationStarted = React.useRef(false);
-  const reloadTimer = React.useRef<number | null>(null);
+  const celebrationStarted = useRef(false);
+  const reloadTimer = useRef<number | null>(null);
 
-  const [nowMs, setNowMs] = React.useState(serverNow);
-  const [celebrating, setCelebrating] = React.useState(false);
+  const [nowMs, setNowMs] = useState(serverNow);
+  const [celebrating, setCelebrating] = useState(false);
 
   /* ============================================================
      SYNCHRONIZE COUNTDOWN WITH SERVER TIME
      ============================================================ */
 
-  React.useEffect(() => {
+  useEffect(() => {
     origin.current = {
       serverNow,
       perfNow: performance.now(),
@@ -111,7 +111,7 @@ export function LaunchCountdown({
      START 8-SECOND CELEBRATION
      ============================================================ */
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!state.launched) return;
     if (celebrationStarted.current) return;
 
@@ -173,7 +173,7 @@ export function LaunchCountdown({
               "--particle-distance": `${particle.distance}px`,
               "--particle-delay": `${particle.delay}s`,
               "--particle-size": `${particle.size}px`,
-            } as React.CSSProperties;
+            } as CSSProperties;
 
             return (
               <span

@@ -5,8 +5,7 @@ import { Readable } from "stream";
 
 import { sql } from "@/lib/db";
 import { cloudinary } from "@/lib/cloudinary";
-
-const MAX_FILE_SIZE = 20 * 1024 * 1024;
+import { detectMediaType, MAX_MEDIA_BYTES, MAX_VIDEO_BYTES } from "@/lib/media/media-utils";
 
 const ALLOWED_TYPES = new Set([
   "image/jpeg",
@@ -15,17 +14,13 @@ const ALLOWED_TYPES = new Set([
   "image/gif",
   "image/heic",
   "image/heif",
+  "video/mp4",
+  "video/quicktime",
+  "video/webm",
+  "video/3gpp",
+  "video/x-msvideo",
+  "video/mpeg",
 ]);
-
-function detectedImageType(buffer: Buffer) {
-  if (buffer.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff]))) return "image/jpeg";
-  if (buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return "image/png";
-  const head = buffer.subarray(0, 12).toString("ascii");
-  if (head.startsWith("GIF87a") || head.startsWith("GIF89a")) return "image/gif";
-  if (head.startsWith("RIFF") && head.slice(8) === "WEBP") return "image/webp";
-  if (head.slice(4, 8) === "ftyp" && /heic|heix|hevc|hevx|mif1/.test(head.slice(8))) return "image/heic";
-  return null;
-}
 
 function inputError(message: string, status: number) {
   const error = new Error(message) as Error & { status: number };
@@ -65,12 +60,15 @@ type IngestMediaInput = {
 function uploadToCloudinary(
   buffer: Buffer,
   folder: string,
+  resourceType: "image" | "video",
+  format?: "jpg" | "mp4",
 ): Promise<CloudinaryUploadResult> {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder,
-        resource_type: "image",
+        resource_type: resourceType,
+        ...(format ? { format } : {}),
         use_filename: true,
         unique_filename: true,
         overwrite: false,
@@ -116,14 +114,17 @@ export async function ingestMedia({
     );
   }
 
-  if (buffer.length > MAX_FILE_SIZE) {
-    throw inputError("Image exceeds the 20 MB upload limit.", 413);
+  const isVideo = mimeType.startsWith("video/");
+  const maxBytes = isVideo ? MAX_VIDEO_BYTES : MAX_MEDIA_BYTES;
+  if (buffer.length > maxBytes) {
+    throw inputError(`${isVideo ? "Video" : "Image"} exceeds the ${maxBytes / 1024 / 1024} MB upload limit.`, 413);
   }
 
-  const detectedType = detectedImageType(buffer);
+  const detectedType = detectMediaType(buffer);
   const heifFamily = mimeType === "image/heic" || mimeType === "image/heif";
-  if (!detectedType || (detectedType !== mimeType && !(heifFamily && detectedType === "image/heic"))) {
-    throw inputError("The file contents do not match a supported image format.", 415);
+  const isoVideoFamily = isVideo && (detectedType === "video/mp4" || detectedType === "video/quicktime" || detectedType === "video/3gpp");
+  if (!detectedType || (detectedType !== mimeType && !(heifFamily && detectedType === "image/heic") && !isoVideoFamily)) {
+    throw inputError("The file contents do not match a supported media format.", 415);
   }
 
   const projectRows = (await sql`
@@ -237,7 +238,10 @@ export async function ingestMedia({
   const uploaded = await uploadToCloudinary(
     buffer,
     folder,
+    isVideo ? "video" : "image",
+    isVideo ? "mp4" : heifFamily ? "jpg" : undefined,
   );
+  const storedMimeType = isVideo ? "video/mp4" : heifFamily ? "image/jpeg" : mimeType;
 
   try {
     const insertedRows = (await sql`
@@ -279,7 +283,7 @@ export async function ingestMedia({
         ${uploaded.bytes ?? fileSize ?? buffer.length},
         ${sourceRef}
         , ${originalFilename}
-        , ${mimeType}
+        , ${storedMimeType}
       )
       RETURNING
         id,

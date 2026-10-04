@@ -3,9 +3,11 @@ import "server-only";
 import { sql } from "@/lib/db";
 import { decryptGoogleToken } from "@/lib/google/photos-token";
 import { ingestMedia } from "@/lib/media/ingest-media";
+import { MAX_MEDIA_BYTES, MAX_VIDEO_BYTES } from "@/lib/media/media-utils";
 import { requireAdminApi } from "@/lib/auth/admin-session";
 
 export const runtime = "nodejs";
+export const maxDuration = 300;
 
 const GOOGLE_TOKEN_URL =
   "https://oauth2.googleapis.com/token";
@@ -34,6 +36,9 @@ type GooglePickerMediaItem = {
     mediaFileMetadata?: {
       width?: string;
       height?: string;
+      videoMetadata?: {
+        processingStatus?: "UNSPECIFIED" | "PROCESSING" | "READY" | "FAILED";
+      };
     };
   };
   baseUrl?: string;
@@ -81,6 +86,7 @@ export async function POST(request: Request) {
       typeof body.projectId === "string"
         ? body.projectId.trim()
         : "";
+    const folderId = typeof body.folderId === "string" ? body.folderId.trim() : "";
 
     const sessionId =
       typeof body.sessionId === "string"
@@ -104,8 +110,8 @@ export async function POST(request: Request) {
         ? body.caption.trim()
         : null;
 
-    if (!projectId) {
-      return jsonError("projectId is required.");
+    if ((!projectId && !folderId) || (projectId && folderId)) {
+      return jsonError("Exactly one projectId or folderId is required.");
     }
 
     if (!sessionId) {
@@ -142,9 +148,9 @@ export async function POST(request: Request) {
     /*
      * Decrypt the refresh token only on the server.
      */
-    const refreshToken = decryptGoogleToken(
-      connectionRows[0].refresh_token,
-    );
+    let refreshToken: string;
+    try { refreshToken = decryptGoogleToken(connectionRows[0].refresh_token); }
+    catch { return jsonError("Google Photos authorization expired. Please reconnect.", 409); }
 
     const clientId =
       process.env.GOOGLE_PHOTOS_CLIENT_ID;
@@ -249,8 +255,18 @@ export async function POST(request: Request) {
       selectedItem.mimeType ??
       "image/jpeg";
 
-    if (!mimeType.startsWith("image/")) {
-      return jsonError("The selected item is not a supported image.", 415);
+    const isVideo = selectedItem.type === "VIDEO" || mimeType.startsWith("video/");
+    const supported = isVideo
+      ? new Set(["video/mp4", "video/quicktime", "video/webm", "video/3gpp", "video/x-msvideo", "video/mpeg"])
+      : new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif"]);
+    if (!supported.has(mimeType)) {
+      return jsonError(`The selected ${isVideo ? "video" : "image"} format is not supported.`, 415);
+    }
+    const videoStatus = selectedItem.mediaFile?.mediaFileMetadata?.videoMetadata?.processingStatus;
+    if (isVideo && videoStatus && videoStatus !== "READY") {
+      return jsonError(videoStatus === "PROCESSING"
+        ? "This video is still processing in Google Photos. Try again when it is ready."
+        : "This video is not available for download from Google Photos.", 409);
     }
 
     /*
@@ -259,10 +275,11 @@ export async function POST(request: Request) {
      * Append d=true so Google returns the actual
      * downloadable media bytes.
      */
-    const downloadUrl =
-      `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}d=true`;
+    const downloadUrl = isVideo
+      ? `${baseUrl}=dv`
+      : `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}d=true`;
 
-    const imageResponse = await fetch(
+    const mediaResponse = await fetch(
       downloadUrl,
       {
         method: "GET",
@@ -271,24 +288,26 @@ export async function POST(request: Request) {
             `Bearer ${tokenData.access_token}`,
         },
         cache: "no-store",
+        signal: AbortSignal.timeout(isVideo ? 120_000 : 45_000),
       },
     );
 
-    const declaredLength = Number(imageResponse.headers.get("content-length") ?? 0);
-    if (declaredLength > 20 * 1024 * 1024) {
-      return jsonError("Image exceeds the 20 MB upload limit.", 413);
+    const maxBytes = isVideo ? MAX_VIDEO_BYTES : MAX_MEDIA_BYTES;
+    const declaredLength = Number(mediaResponse.headers.get("content-length") ?? 0);
+    if (declaredLength > maxBytes) {
+      return jsonError(`${isVideo ? "Video" : "Image"} exceeds the ${maxBytes / 1024 / 1024} MB upload limit.`, 413);
     }
 
-    if (!imageResponse.ok) {
+    if (!mediaResponse.ok) {
       console.error(
-        "Google Photos image download failed:",
+        "Google Photos media download failed:",
         {
-          status: imageResponse.status,
+          status: mediaResponse.status,
         },
       );
 
       return jsonError(
-        "Could not download the selected Google Photos image.",
+        "Could not download the selected Google Photos media.",
         502,
       );
     }
@@ -298,17 +317,16 @@ export async function POST(request: Request) {
      * so the existing ingestMedia() pipeline can
      * process it exactly like a local upload.
      */
-    const arrayBuffer =
-      await imageResponse.arrayBuffer();
-
-    const buffer = Buffer.from(arrayBuffer);
+    const buffer = await readLimitedBody(mediaResponse, maxBytes);
 
     if (buffer.length === 0) {
       return jsonError(
-        "Google Photos returned an empty image.",
+        "Google Photos returned an empty media file.",
         502,
       );
     }
+    const responseMimeType = mediaResponse.headers.get("content-type")?.split(";", 1)[0]?.trim().toLowerCase();
+    const effectiveMimeType = responseMimeType && supported.has(responseMimeType) ? responseMimeType : mimeType;
 
     /*
      * Determine the filename.
@@ -322,41 +340,56 @@ export async function POST(request: Request) {
      * Store the Google Photos media through the
      * EXISTING Cloudinary + Neon ingestion pipeline.
      */
+    const common = { buffer, mimeType: effectiveMimeType, source: "google-photos" as const, alt, caption,
+      sourceRef: `google-photos:${mediaItemId}`, originalFilename: filename.replace(/[\\/\0]/g, "_").slice(0, 255) };
     const result = await ingestMedia({
-      projectId,
-      buffer,
-      mimeType,
+      projectId: folderId || projectId,
       fileSize: buffer.length,
-      source: "google-photos",
-      alt,
-      caption,
-      sourceRef:
-        `google-photos:${mediaItemId}`,
-      originalFilename: filename.replace(/[\\/\0]/g, "_").slice(0, 255),
+      ...common,
     });
 
     return Response.json({
       success: true,
       message:
         result.duplicate
-          ? "Google Photos image already exists in the project gallery."
-          : "Google Photos image imported successfully.",
+          ? "Google Photos media already exists in the project gallery."
+          : "Google Photos media imported successfully.",
       duplicate: result.duplicate,
       filename,
       mediaItemId,
       sessionId,
       image: result.image,
-      project: result.project,
+      project: "project" in result ? result.project : undefined,
     });
   } catch (error) {
-    console.error(
-      "Google Photos media import failed:",
-      error,
-    );
+    console.error("Google Photos media import failed", { name: error instanceof Error ? error.name : "unknown" });
 
-    const status = error instanceof Error && "status" in error && typeof error.status === "number"
+    const status = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError") ? 504
+      : error instanceof Error && "status" in error && typeof error.status === "number"
       ? error.status
       : 500;
-    return jsonError(status < 500 && error instanceof Error ? error.message : "Google Photos media import failed.", status);
+    return jsonError(status === 504 ? "Google Photos media download timed out." : status < 500 && error instanceof Error ? error.message : "Google Photos media import failed.", status);
   }
+}
+
+async function readLimitedBody(response: Response, maxBytes: number) {
+  if (!response.body) return Buffer.alloc(0);
+  const reader = response.body.getReader();
+  const chunks: Buffer[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel();
+        throw Object.assign(new Error("Selected media exceeds the allowed size."), { status: 413 });
+      }
+      chunks.push(Buffer.from(value));
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  return Buffer.concat(chunks, total);
 }

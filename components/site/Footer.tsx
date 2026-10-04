@@ -11,6 +11,7 @@ const columns = [
     links: [
       { label: "About", to: "/about" },
       { label: "Our Focus Areas", to: "/focus-areas" },
+      { label: "Projects", to: "/projects" },
       { label: "Principles", to: "/principles" },
       { label: "Support", to: "/support" },
       { label: "Contact", to: "/contact" },

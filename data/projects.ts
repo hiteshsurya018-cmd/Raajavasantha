@@ -12,6 +12,8 @@ export type ProjectImage = {
   alt: string;
   caption?: string;
   source?: "local" | "cloudinary" | "google-photos" | "external";
+  resourceType?: "image" | "video";
+  mimeType?: string;
 };
 
 export type ProjectMetric = {
