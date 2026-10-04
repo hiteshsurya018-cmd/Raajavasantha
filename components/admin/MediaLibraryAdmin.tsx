@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { ArrowRight, CheckCircle2, Eye, EyeOff, FolderOpen, ImagePlus, Images, Plus, Trash2 } from "lucide-react";
+import { CheckCircle2, EllipsisVertical, Eye, EyeOff, FolderOpen, ImagePlus, Images, Plus, Trash2 } from "lucide-react";
 import type { MediaFolder } from "@/lib/media/library";
 
 type Connection = { connected: boolean; reconnectRequired?: boolean };
@@ -25,9 +25,6 @@ export function MediaLibraryAdmin({ initialFolders, connection }: { initialFolde
   const [folders, setFolders] = useState(initialFolders);
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState("");
-  const [importFolderName, setImportFolderName] = useState("");
-  const [creatingImportFolder, setCreatingImportFolder] = useState(false);
-  const [sourceView, setSourceView] = useState<"photos" | "albums">("photos");
   const [googleItems, setGoogleItems] = useState<GoogleItem[]>([]);
   const [pickerSessionId, setPickerSessionId] = useState("");
   const [pickerUri, setPickerUri] = useState("");
@@ -44,12 +41,11 @@ export function MediaLibraryAdmin({ initialFolders, connection }: { initialFolde
   const preparePickerRef = useRef<(force?: boolean) => void>(() => undefined);
   const googleItemsRef = useRef<GoogleItem[]>([]);
   const createDialog = useRef<HTMLDialogElement>(null);
-  const importDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => () => { if (pollTimer.current) clearTimeout(pollTimer.current); }, []);
   useEffect(() => { googleItemsRef.current = googleItems; }, [googleItems]);
   useEffect(() => {
-    if (connection.connected && sourceView === "photos" && !pickerUri && !googleItems.length) preparePickerRef.current();
-  }, [connection.connected, googleItems.length, pickerUri, sourceView]);
+    if (connection.connected && !pickerUri && !googleItems.length) preparePickerRef.current();
+  }, [connection.connected, googleItems.length, pickerUri]);
 
   async function createFolder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -118,7 +114,6 @@ export function MediaLibraryAdmin({ initialFolders, connection }: { initialFolde
     } while (pageToken);
     googleItemsRef.current = selected;
     setGoogleItems(selected);
-    setSourceView("photos");
     if (!selected.length) setError("No photographs were selected.");
   }
 
@@ -196,25 +191,6 @@ export function MediaLibraryAdmin({ initialFolders, connection }: { initialFolde
     void preparePicker(true);
   }
 
-  async function createImportFolder(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError("");
-    setCreatingImportFolder(true);
-    try {
-      const response = await fetch("/api/admin/folders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: importFolderName }),
-      });
-      const data = await response.json() as { folder?: MediaFolder; error?: string };
-      if (!response.ok || !data.folder) throw new Error(data.error ?? "Unable to create the folder.");
-      window.location.assign(`/admin/folders/${data.folder.id}#google-photos-import`);
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Unable to create the folder.");
-      setCreatingImportFolder(false);
-    }
-  }
-
   async function toggleVisibility(folder: MediaFolder) {
     setBusyId(folder.id);
     setError("");
@@ -265,8 +241,8 @@ export function MediaLibraryAdmin({ initialFolders, connection }: { initialFolde
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <button type="button" onClick={() => importDialog.current?.showModal()} className="inline-flex items-center gap-2 bg-gold px-5 py-3 text-sm font-semibold text-forest-deep">
-                <ImagePlus size={17} aria-hidden="true" /> Import Google Photos folder
+              <button type="button" onClick={openPicker} disabled={connection.connected && !pickerUri} className="inline-flex items-center gap-2 bg-gold px-5 py-3 text-sm font-semibold text-forest-deep disabled:opacity-50">
+                <ImagePlus size={17} aria-hidden="true" /> Import from Google Photos
               </button>
               <button type="button" onClick={() => createDialog.current?.showModal()} className="inline-flex items-center gap-2 border border-ivory/20 px-5 py-3 text-sm font-semibold text-ivory hover:border-gold">
                 <Plus size={17} aria-hidden="true" /> New project
@@ -277,114 +253,95 @@ export function MediaLibraryAdmin({ initialFolders, connection }: { initialFolde
 
         {error && <p role="alert" className="mt-6 border border-red-300/30 bg-red-950/30 p-4 text-sm text-red-100">{error}</p>}
 
-        <div className="mt-8 grid items-start gap-px border border-gold/25 bg-gold/25 lg:grid-cols-2">
-          <aside className="min-w-0 bg-forest/80 lg:sticky lg:top-28" aria-label="Google Photos source workspace">
-            <div className="flex flex-wrap items-start justify-between gap-4 border-b border-gold/20 px-5 py-5 sm:px-6">
-              <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Source</p><h2 className="mt-2 font-display text-3xl text-ivory">Google Photos workspace</h2></div>
-              <span className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider ${connection.connected ? "text-emerald-300" : "text-ivory/50"}`}><span className={`h-2 w-2 rounded-full ${connection.connected ? "bg-emerald-400" : "bg-ivory/30"}`} />{connection.connected ? "Connected" : "Not connected"}</span>
-            </div>
-
-            <div className="grid min-h-[31rem] sm:grid-cols-[8.5rem_minmax(0,1fr)]">
-              <nav aria-label="Google Photos sections" className="flex border-b border-gold/20 bg-black/10 p-2 sm:flex-col sm:border-b-0 sm:border-r sm:p-3">
-                <p className="hidden px-3 pb-4 pt-2 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-ivory/35 sm:block">Google Photos</p>
-                <button type="button" onClick={() => setSourceView("photos")} aria-pressed={sourceView === "photos"} className={`flex-1 px-3 py-3 text-left text-sm font-semibold transition-colors sm:flex-none ${sourceView === "photos" ? "bg-gold text-forest-deep" : "text-ivory/65 hover:bg-ivory/5 hover:text-ivory"}`}>Photos</button>
-                <button type="button" onClick={() => setSourceView("albums")} aria-pressed={sourceView === "albums"} className={`flex-1 px-3 py-3 text-left text-sm font-semibold transition-colors sm:flex-none ${sourceView === "albums" ? "bg-gold text-forest-deep" : "text-ivory/65 hover:bg-ivory/5 hover:text-ivory"}`}>Albums</button>
-              </nav>
-
-              <div className="min-w-0 p-5 sm:p-6">
-                {sourceView === "photos" ? (
-                  <>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold">Photos</p>
-                    <h3 className="mt-2 font-display text-3xl text-ivory">Select from Google Photos</h3>
-                    <p className="mt-3 text-sm leading-6 text-ivory/55">Open Google’s secure Picker, choose photographs, then import them into an existing or newly named Rajavasantha project.</p>
-                    {!googleItems.length ? <div className="mt-6 grid min-h-52 place-items-center border border-gold/30 bg-black/10 px-5 text-center" aria-live="polite">
-                      <div><Images className="mx-auto text-gold" size={38} aria-hidden="true" /><p className="mt-4 font-display text-2xl text-ivory">{!connection.connected ? "Connect Google Photos" : pickerPreparing ? "Preparing Google Photos…" : pickerUri ? "Google Photos Picker ready" : "Preparing secure Picker…"}</p><p className="mx-auto mt-2 max-w-sm text-sm text-ivory/45">{!connection.connected ? "Connect your account once to select photographs securely." : pickerUri ? "Google requires Picker to open in its own secure window. Your session is ready and selection updates will appear here automatically." : "Creating a secure selection session automatically. No photographs are shared until you choose them."}</p>{connection.connected && pickerUri && <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gold"><span className="h-2 w-2 rounded-full bg-gold" />Session ready</span>}</div>
-                    </div> : <div className="mt-6" draggable={!pickerBusy} onDragStart={(event) => { event.dataTransfer.effectAllowed = "copy"; event.dataTransfer.setData("application/x-rajavasantha-google-selection", pickerSessionId); }}><div className="flex items-center justify-between gap-3"><p className="font-semibold text-ivory">{googleItems.length} selected from Google Photos</p><button type="button" onClick={clearGoogleSelection} className="text-xs text-ivory/55 underline">Clear</button></div><div className="mt-3 grid grid-cols-3 gap-2">{googleItems.slice(0, 12).map((item) => item.baseUrl && <div key={item.id} className="relative aspect-square overflow-hidden border border-ivory/10"><Image src={`${item.baseUrl}=w300-h300-c`} alt={item.fileName ?? "Selected photograph"} fill unoptimized className="object-cover" /></div>)}</div>{googleItems.length > 12 && <p className="mt-2 text-xs text-ivory/45">+ {googleItems.length - 12} more selected</p>}<p className="mt-3 text-xs text-gold">Drag this selection onto a project card, or choose a destination below.</p></div>}
-                    {!googleItems.length ? <button type="button" onClick={openPicker} disabled={connection.connected && !pickerUri} className="mt-6 flex w-full items-center justify-between bg-gold px-5 py-4 text-left text-sm font-semibold text-forest-deep disabled:opacity-60"><span>{!connection.connected ? "Connect Google Photos" : pickerUri ? "Continue in Google Photos" : "Preparing Picker…"}</span><ArrowRight size={17} aria-hidden="true" /></button>
-                      : <div className="mt-5"><label className="block text-xs font-semibold uppercase tracking-wider text-ivory/50">Import to<select value={destinationId} onChange={(event) => setDestinationId(event.target.value)} className="mt-2 w-full border border-gold/25 bg-forest-deep px-3 py-3 text-sm font-normal normal-case tracking-normal text-ivory"><option value="">Choose a project…</option>{folders.map((folder) => <option key={folder.id} value={folder.id}>{folder.name}</option>)}</select></label><button type="button" disabled={!destinationId || pickerBusy} onClick={() => void importToProject(destinationId)} className="mt-3 w-full bg-gold px-5 py-3 text-sm font-semibold text-forest-deep disabled:opacity-50">{pickerBusy ? `Importing ${importProgress.done} / ${importProgress.total}` : "Import selected photographs"}</button>{pickerBusy && <div className="mt-3 h-1 bg-ivory/10"><div className="h-full bg-gold" style={{ width: `${importProgress.total ? importProgress.done / importProgress.total * 100 : 0}%` }} /></div>}{importResult && <div className="mt-4 border border-gold/25 bg-black/15 p-4 text-sm" aria-live="polite"><p className="font-semibold text-ivory">Import complete</p><p className="mt-1 text-ivory/60">{importResult.imported} imported · {importResult.skipped} skipped · {importResult.failed.length} failed</p>{destinationId && <Link href={`/admin/folders/${destinationId}`} className="mt-3 inline-flex text-gold underline">View project</Link>}</div>}</div>}
-                  </>
-                ) : (
-                  <>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold">Albums</p>
-                    <h3 className="mt-2 font-display text-3xl text-ivory">Choose an album in Picker</h3>
-                    <p className="mt-3 text-sm leading-6 text-ivory/55">Google’s Picker does not expose a persistent album list to this website. Open Picker, find the album or collection there, and select the photographs you want to import.</p>
-                    <div className="mt-6 border border-gold/20 bg-black/10 p-5"><p className="text-sm font-semibold text-ivory">Supported album workflow</p><ol className="mt-4 space-y-3 text-sm text-ivory/55"><li><span className="mr-3 text-gold">01</span>Name or choose the destination project</li><li><span className="mr-3 text-gold">02</span>Open Google Photos Picker</li><li><span className="mr-3 text-gold">03</span>Find the album and select its photos</li><li><span className="mr-3 text-gold">04</span>Review and import the selection</li></ol></div>
-                    <button type="button" onClick={openPicker} disabled={connection.connected && !pickerUri} className="mt-6 flex w-full items-center justify-between bg-gold px-5 py-4 text-left text-sm font-semibold text-forest-deep disabled:opacity-60"><span>{!connection.connected ? "Connect Google Photos" : pickerUri ? "Continue in Picker for album selection" : "Preparing Picker…"}</span><ArrowRight size={17} aria-hidden="true" /></button>
-                  </>
-                )}
-              </div>
-            </div>
-          </aside>
-
-          <section aria-labelledby="library-heading" className="min-w-0 bg-forest-deep p-5 sm:p-6">
-            <div className="flex flex-wrap items-end justify-between gap-4">
+        <section className="mt-8 border border-gold/25 bg-forest/55 px-5 py-5 sm:px-6" aria-labelledby="google-source-heading">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-4">
+              <div className="grid h-11 w-11 shrink-0 place-items-center border border-gold/30 bg-black/10 text-gold"><Images size={21} aria-hidden="true" /></div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Destination</p>
-                <h2 id="library-heading" className="mt-2 font-display text-3xl text-ivory">Projects & folders</h2>
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2 id="google-source-heading" className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Google Photos</h2>
+                  <span className={"inline-flex items-center gap-1.5 text-[0.65rem] font-bold uppercase tracking-wider " + (connection.connected ? "text-emerald-300" : "text-ivory/45")}><span className={"h-1.5 w-1.5 rounded-full " + (connection.connected ? "bg-emerald-400" : "bg-ivory/30")} />{connection.connected ? "Connected" : "Not connected"}</span>
+                </div>
+                <p className="mt-1 text-sm text-ivory/55">{!connection.connected ? "Connect Google Photos to begin importing." : pickerPreparing ? "Preparing secure Picker…" : pickerUri ? "Ready to import" : "Refreshing Picker session…"}</p>
               </div>
-              <div className="flex items-center gap-4"><p className="text-sm text-ivory/50">{folders.length} {folders.length === 1 ? "project" : "projects"}</p><button type="button" onClick={() => createDialog.current?.showModal()} className="inline-flex items-center gap-2 border border-ivory/20 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-ivory hover:border-gold"><Plus size={14} /> New project</button></div>
             </div>
-
-            {!folders.length ? (
-              <div className="mt-8 border border-dashed border-gold/35 px-6 py-14 text-center">
-                <FolderOpen className="mx-auto text-gold" size={34} aria-hidden="true" />
-                <p className="mt-5 font-display text-3xl">No projects yet</p>
-                <p className="mx-auto mt-2 max-w-md text-sm text-ivory/55">Create a project, or import a named collection from Google Photos.</p>
-                <button type="button" onClick={() => importDialog.current?.showModal()} className="mt-6 bg-gold px-5 py-3 text-sm font-semibold text-forest-deep">Import your first collection</button>
-              </div>
-            ) : (
-              <div className="mt-7 grid gap-5 xl:grid-cols-2">
-                {folders.map((folder) => (
-                  <article key={folder.id}
-                    onDragOver={(event) => { if (googleItems.length) { event.preventDefault(); event.dataTransfer.dropEffect = "copy"; setDragOverId(folder.id); } }}
-                    onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragOverId(""); }}
-                    onDrop={(event) => { event.preventDefault(); setDragOverId(""); if (event.dataTransfer.getData("application/x-rajavasantha-google-selection") === pickerSessionId) void importToProject(folder.id); }}
-                    className={`group relative overflow-hidden border bg-ivory text-forest-deep transition-all ${dragOverId === folder.id ? "border-gold ring-4 ring-gold/30" : "border-ivory/10 hover:border-gold/70"}`}>
-                    {dragOverId === folder.id && <div className="absolute inset-0 z-20 grid place-items-center bg-forest-deep/90 text-center text-ivory"><div><ImagePlus className="mx-auto text-gold" /><p className="mt-2 font-display text-2xl">Drop photos here</p><p className="text-xs text-ivory/60">Import into {folder.name}</p></div></div>}
-                    <Link href={`/admin/folders/${folder.id}`} className="block">
-                      <div className="relative aspect-[16/10] overflow-hidden bg-forest/10">
-                        {folder.cover_url ? <Image src={folder.cover_url} alt={folder.cover_alt ?? `${folder.name} cover`} fill sizes="(min-width: 768px) 32vw, 90vw" className="object-cover transition-transform duration-500 group-hover:scale-[1.025]" /> : <Images className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-forest/25" size={42} aria-hidden="true" />}
-                        <span className={`absolute right-3 top-3 inline-flex items-center gap-1.5 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wider ${folder.is_public ? "bg-forest-deep text-ivory" : "bg-ivory text-forest-deep"}`}>
-                          {folder.is_public ? <Eye size={12} aria-hidden="true" /> : <EyeOff size={12} aria-hidden="true" />}
-                          {folder.is_public ? "Public" : "Private"}
-                        </span>
-                      </div>
-                      <div className="p-5">
-                        <h3 className="font-display text-2xl">{folder.name}</h3>
-                        {folder.description && <p className="mt-2 line-clamp-2 text-sm text-forest-deep/65">{folder.description}</p>}
-                        <p className="mt-4 text-xs text-forest-deep/50">{folder.photo_count} photographs · Updated {new Date(folder.updated_at).toLocaleDateString()}</p>
-                      </div>
-                    </Link>
-                    <div className="grid grid-cols-2 border-t border-forest-deep/10">
-                      <Link href={`/admin/folders/${folder.id}`} className="inline-flex items-center justify-center gap-2 border-b border-r border-forest-deep/10 px-3 py-3 text-xs font-semibold uppercase tracking-wider hover:bg-forest-deep hover:text-ivory"><FolderOpen size={14} /> Open</Link>
-                      <Link href={`/admin/folders/${folder.id}#google-photos-import`} className="inline-flex items-center justify-center gap-2 border-b border-forest-deep/10 bg-gold px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider hover:bg-gold-soft"><ImagePlus size={14} /> Import</Link>
-                      <button type="button" disabled={busyId === folder.id} onClick={() => void toggleVisibility(folder)} className="inline-flex items-center justify-center gap-2 border-r border-forest-deep/10 px-3 py-3 text-xs font-semibold uppercase tracking-wider hover:bg-forest-deep hover:text-ivory disabled:opacity-50">{folder.is_public ? <EyeOff size={14} /> : <Eye size={14} />}{folder.is_public ? "Unpublish" : "Publish"}</button>
-                      <button type="button" disabled={busyId === folder.id} onClick={() => void deleteFolder(folder)} className="inline-flex items-center justify-center gap-2 px-3 py-3 text-xs font-semibold uppercase tracking-wider text-red-800 hover:bg-red-50 disabled:opacity-50"><Trash2 size={14} /> Delete</button>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
-        </div>
-
-        <dialog ref={importDialog} className="w-[min(40rem,calc(100%-2rem))] border border-gold/30 bg-forest-deep p-0 text-ivory backdrop:bg-black/70">
-          <div className="p-7">
-            <div className="flex items-start gap-4"><ImagePlus className="mt-1 text-gold" aria-hidden="true" /><div><h2 className="font-display text-3xl">Import a Google Photos collection</h2><p className="mt-2 text-sm leading-6 text-ivory/60">Create a named Rajavasantha project, then select its photographs using Google’s secure Picker.</p></div></div>
-            <form onSubmit={createImportFolder} className="mt-7">
-              <label className="block text-sm font-semibold">Project or folder name *<input value={importFolderName} onChange={(event) => setImportFolderName(event.target.value)} required maxLength={120} className="mt-2 w-full border border-gold/30 bg-black/20 px-4 py-3 font-normal text-ivory" /></label>
-              <button disabled={creatingImportFolder} className="mt-4 inline-flex items-center gap-2 bg-gold px-6 py-3 text-sm font-semibold text-forest-deep disabled:opacity-60">{creatingImportFolder ? "Creating…" : "Create and continue"}<ArrowRight size={16} /></button>
-            </form>
-            <div className="my-7 border-t border-ivory/10" />
-            <h3 className="font-display text-2xl">Import into an existing project</h3>
-            <div className="mt-4 grid max-h-56 gap-2 overflow-y-auto">
-              {folders.map((folder) => <Link key={folder.id} href={`/admin/folders/${folder.id}#google-photos-import`} className="flex items-center justify-between border border-ivory/10 px-4 py-3 font-semibold hover:border-gold"><span>{folder.name}</span><ArrowRight size={16} aria-hidden="true" /></Link>)}
-            </div>
-            {error && <p role="alert" className="mt-4 text-sm text-red-200">{error}</p>}
-            <button type="button" onClick={() => importDialog.current?.close()} className="mt-6 border border-ivory/20 px-6 py-3 text-sm">Cancel</button>
+            <button type="button" onClick={openPicker} disabled={connection.connected && !pickerUri} className="inline-flex items-center gap-2 bg-gold px-5 py-3 text-sm font-semibold text-forest-deep transition-colors hover:bg-gold-soft disabled:opacity-50"><ImagePlus size={17} aria-hidden="true" />{connection.connected ? "Import from Google Photos" : "Connect Google Photos"}</button>
           </div>
-        </dialog>
+        </section>
 
+        {!!googleItems.length && (
+          <section className="mt-5 border border-gold/30 bg-black/15 p-4 sm:p-5" aria-label="Selected Google Photos media">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div draggable={!pickerBusy} onDragStart={(event) => { event.dataTransfer.effectAllowed = "copy"; event.dataTransfer.setData("application/x-rajavasantha-google-selection", pickerSessionId); }} className="flex min-w-0 items-center gap-4">
+                <div className="flex shrink-0 -space-x-2">
+                  {googleItems.slice(0, 4).map((item) => item.baseUrl && <div key={item.id} className="relative h-12 w-12 overflow-hidden border-2 border-forest-deep bg-forest"><Image src={item.baseUrl + "=w160-h160-c"} alt="" fill unoptimized className="object-cover" /></div>)}
+                  {googleItems.length > 4 && <span className="grid h-12 w-12 place-items-center border-2 border-forest-deep bg-gold text-xs font-bold text-forest-deep">+{googleItems.length - 4}</span>}
+                </div>
+                <div><p className="font-semibold text-ivory">{googleItems.length} {googleItems.length === 1 ? "item" : "items"} selected</p><p className="mt-1 text-xs text-ivory/45">Drag this selection onto a project or choose a destination.</p></div>
+              </div>
+              <div className="flex flex-1 flex-wrap items-end justify-end gap-3">
+                <label className="min-w-[12rem] flex-1 text-[0.65rem] font-semibold uppercase tracking-wider text-ivory/45 lg:max-w-xs">Destination<select value={destinationId} onChange={(event) => setDestinationId(event.target.value)} className="mt-1.5 w-full border border-ivory/15 bg-forest-deep px-3 py-2.5 text-sm font-normal normal-case tracking-normal text-ivory"><option value="">Select project…</option>{folders.map((folder) => <option key={folder.id} value={folder.id}>{folder.name}</option>)}</select></label>
+                <button type="button" disabled={!destinationId || pickerBusy} onClick={() => void importToProject(destinationId)} className="bg-gold px-4 py-2.5 text-sm font-semibold text-forest-deep disabled:opacity-50">{pickerBusy ? "Importing " + importProgress.done + "/" + importProgress.total : "Import " + googleItems.length + " " + (googleItems.length === 1 ? "item" : "items")}</button>
+                <button type="button" disabled={pickerBusy} onClick={clearGoogleSelection} className="border border-ivory/20 px-4 py-2.5 text-sm text-ivory disabled:opacity-50">Clear</button>
+              </div>
+            </div>
+            {pickerBusy && <div className="mt-4 h-1 bg-ivory/10"><div className="h-full bg-gold transition-[width]" style={{ width: String(importProgress.total ? importProgress.done / importProgress.total * 100 : 0) + "%" }} /></div>}
+            {importResult && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-ivory/10 pt-4 text-sm" aria-live="polite"><p className="text-ivory/65"><span className="font-semibold text-ivory">Import complete:</span> {importResult.imported} imported · {importResult.skipped} skipped · {importResult.failed.length} failed</p>{destinationId && <Link href={"/admin/folders/" + destinationId} className="font-semibold text-gold underline">View project</Link>}</div>}
+          </section>
+        )}
+
+        <section aria-labelledby="library-heading" className="mt-10">
+          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-gold/20 pb-4">
+            <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Media library</p><h2 id="library-heading" className="mt-2 font-display text-4xl text-ivory">Projects & folders</h2></div>
+            <p className="text-sm text-ivory/50">{folders.length} {folders.length === 1 ? "project" : "projects"}</p>
+          </div>
+
+          {!folders.length ? (
+            <div className="mx-auto mt-12 max-w-xl border border-dashed border-gold/35 px-6 py-14 text-center">
+              <FolderOpen className="mx-auto text-gold" size={34} aria-hidden="true" />
+              <p className="mt-5 font-display text-3xl">Create your first project</p>
+              <p className="mx-auto mt-3 text-sm leading-6 text-ivory/55">Projects organise the photographs and media that appear across the Rajavasantha website.</p>
+              <button type="button" onClick={() => createDialog.current?.showModal()} className="mt-6 inline-flex items-center gap-2 bg-gold px-5 py-3 text-sm font-semibold text-forest-deep"><Plus size={16} /> New project</button>
+            </div>
+          ) : (
+            <div className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 xl:grid-cols-4 2xl:grid-cols-5">
+              {folders.map((folder) => (
+                <article key={folder.id}
+                  onDragOver={(event) => { if (googleItems.length) { event.preventDefault(); event.dataTransfer.dropEffect = "copy"; setDragOverId(folder.id); } }}
+                  onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragOverId(""); }}
+                  onDrop={(event) => { event.preventDefault(); setDragOverId(""); if (event.dataTransfer.getData("application/x-rajavasantha-google-selection") === pickerSessionId) void importToProject(folder.id); }}
+                  className={"group relative min-w-0 overflow-visible border bg-ivory text-forest-deep shadow-[0_12px_35px_rgba(0,0,0,.08)] transition-all duration-200 " + (dragOverId === folder.id ? "scale-[1.02] border-gold ring-4 ring-gold/25" : "border-ivory/10 hover:-translate-y-0.5 hover:border-gold/70")}>
+                  {dragOverId === folder.id && <div className="absolute inset-0 z-30 grid place-items-center bg-forest-deep/92 text-center text-ivory"><div><ImagePlus className="mx-auto text-gold" /><p className="mt-2 font-display text-xl">Drop to import</p></div></div>}
+                  <Link href={"/admin/folders/" + folder.id} className="block">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-[#e7e1d0]">
+                      {folder.cover_url ? <Image src={folder.cover_url} alt={folder.cover_alt ?? folder.name + " cover"} fill sizes="(min-width:1536px) 18vw, (min-width:1280px) 23vw, (min-width:768px) 31vw, 48vw" className="object-cover transition-transform duration-500 group-hover:scale-[1.025]" /> : <div className="absolute inset-0 grid place-items-center bg-[linear-gradient(145deg,rgba(13,61,45,.04),rgba(184,153,63,.12))]"><div className="text-center"><FolderOpen className="mx-auto text-forest/25" size={36} aria-hidden="true" /><span className="mt-2 block text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-forest/35">Rajavasantha</span></div></div>}
+                      <span className={"absolute right-2 top-2 inline-flex items-center gap-1 px-2 py-1 text-[0.58rem] font-bold uppercase tracking-wider " + (folder.is_public ? "bg-forest-deep text-ivory" : "bg-ivory/95 text-forest-deep")}>{folder.is_public ? <Eye size={10} aria-hidden="true" /> : <EyeOff size={10} aria-hidden="true" />}{folder.is_public ? "Public" : "Private"}</span>
+                    </div>
+                    <div className="min-w-0 p-3 sm:p-4">
+                      <h3 className="truncate font-display text-xl sm:text-2xl">{folder.name}</h3>
+                      <p className="mt-2 text-[0.68rem] text-forest-deep/55">{folder.photo_count} {folder.photo_count === 1 ? "item" : "items"}</p>
+                      <p className="mt-1 text-[0.65rem] text-forest-deep/45">Updated {new Date(folder.updated_at).toLocaleDateString()}</p>
+                    </div>
+                  </Link>
+                  <div className="flex items-center border-t border-forest-deep/10">
+                    <Link href={"/admin/folders/" + folder.id} className="flex-1 px-3 py-3 text-center text-[0.65rem] font-bold uppercase tracking-wider hover:bg-forest-deep hover:text-ivory">Open</Link>
+                    <button type="button" disabled={pickerBusy} onClick={() => { setDestinationId(folder.id); if (googleItems.length) void importToProject(folder.id); else openPicker(); }} className="flex-1 border-l border-forest-deep/10 px-2 py-3 text-[0.65rem] font-bold uppercase tracking-wider text-forest-deep hover:bg-gold disabled:opacity-50">Import</button>
+                    <details className="relative border-l border-forest-deep/10">
+                      <summary aria-label={"More actions for " + folder.name} className="grid h-10 w-10 cursor-pointer list-none place-items-center hover:bg-forest-deep hover:text-ivory [&::-webkit-details-marker]:hidden"><EllipsisVertical size={16} /></summary>
+                      <div className="absolute bottom-11 right-0 z-40 w-36 border border-gold/25 bg-forest-deep p-1 text-ivory shadow-xl">
+                        <button type="button" disabled={busyId === folder.id} onClick={() => void toggleVisibility(folder)} className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-ivory/10 disabled:opacity-50">{folder.is_public ? <EyeOff size={13} /> : <Eye size={13} />}{folder.is_public ? "Unpublish" : "Publish"}</button>
+                        <button type="button" disabled={busyId === folder.id} onClick={() => void deleteFolder(folder)} className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-red-200 hover:bg-red-950/40 disabled:opacity-50"><Trash2 size={13} /> Delete</button>
+                      </div>
+                    </details>
+                  </div>
+                </article>
+              ))}
+              <button type="button" onClick={() => createDialog.current?.showModal()} className="group grid min-h-64 place-items-center border border-dashed border-gold/40 bg-black/10 p-5 text-center text-ivory transition-colors hover:border-gold hover:bg-ivory/5">
+                <span><span className="mx-auto grid h-12 w-12 place-items-center border border-gold/40 text-gold transition-colors group-hover:bg-gold group-hover:text-forest-deep"><Plus size={22} /></span><span className="mt-4 block font-display text-2xl">New project</span><span className="mt-2 block text-xs text-ivory/45">Create a media folder</span></span>
+              </button>
+            </div>
+          )}
+        </section>
         <dialog ref={createDialog} className="w-[min(36rem,calc(100%-2rem))] border border-gold/30 bg-forest-deep p-0 text-ivory backdrop:bg-black/70">
           <form onSubmit={createFolder} className="p-7">
             <div className="flex items-start gap-4"><Plus className="mt-1 text-gold" aria-hidden="true" /><div><h2 className="font-display text-3xl">Create project</h2><p className="mt-2 text-sm text-ivory/60">Only the project name is required. Details can be added later.</p></div></div>
