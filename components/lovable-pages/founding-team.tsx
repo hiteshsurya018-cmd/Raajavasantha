@@ -64,27 +64,27 @@ export default function FoundingTeam() {
 </Reveal>
 
 {/* First row — 2 centered cards */}
-<div className="mt-10 grid grid-cols-2 gap-6 md:grid-cols-6">
+<div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-6 md:gap-6">
   {trustees.slice(0, 2).map((person, i) => (
     <Reveal
       key={person.name}
       delay={i * 70}
       className={i === 0 ? "md:col-span-2 md:col-start-2" : "md:col-span-2"}
     >
-      <article className="flex h-full min-h-[290px] flex-col items-start border border-forest-deep/12 bg-card p-10 lg:p-12">
+      <article className="flex aspect-square h-full flex-col items-start border border-forest-deep/12 bg-card p-2.5 md:aspect-auto md:min-h-[290px] md:p-10 lg:p-12">
         {/* Avatar */}
         <span
           aria-hidden="true"
-          className="flex h-24 w-24 items-center justify-center rounded-full bg-forest-deep font-display text-3xl text-gold"
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-forest-deep font-display text-lg text-gold md:h-24 md:w-24 md:text-3xl"
         >
           {initials(person.name)}
         </span>
 
-        <h2 className="mt-8 font-display text-3xl text-forest-deep">
+        <h2 className="mt-2 break-words font-display text-lg leading-5 text-forest-deep md:mt-8 md:break-normal md:text-3xl md:leading-9">
           {person.name}
         </h2>
 
-        <p className="mt-2 text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-forest-soft">
+        <p className="mt-1 text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-forest-soft md:mt-2 md:text-[0.72rem] md:tracking-[0.2em]">
           {person.role}
         </p>
       </article>
@@ -93,23 +93,27 @@ export default function FoundingTeam() {
 </div>
 
 {/* Second row — 3 cards */}
-<div className="mt-6 grid grid-cols-2 gap-6 md:grid-cols-3">
+<div className="mt-3 grid grid-cols-4 gap-3 md:mt-6 md:grid-cols-3 md:gap-6">
   {trustees.slice(2, 5).map((person, i) => (
-    <Reveal key={person.name} delay={i * 70}>
-      <article className="flex h-full min-h-[290px] flex-col items-start border border-forest-deep/12 bg-card p-10 lg:p-12">
+    <Reveal
+      key={person.name}
+      delay={i * 70}
+      className={`col-span-2 md:col-span-1 ${i === 2 ? "col-start-2 md:col-start-auto" : ""}`}
+    >
+      <article className="flex aspect-square h-full flex-col items-start border border-forest-deep/12 bg-card p-2.5 md:aspect-auto md:min-h-[290px] md:p-10 lg:p-12">
         {/* Avatar */}
         <span
           aria-hidden="true"
-          className="flex h-24 w-24 items-center justify-center rounded-full bg-forest-deep font-display text-3xl text-gold"
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-forest-deep font-display text-lg text-gold md:h-24 md:w-24 md:text-3xl"
         >
           {initials(person.name)}
         </span>
 
-        <h2 className="mt-8 font-display text-3xl text-forest-deep">
+        <h2 className="mt-2 break-words font-display text-lg leading-5 text-forest-deep md:mt-8 md:break-normal md:text-3xl md:leading-9">
           {person.name}
         </h2>
 
-        <p className="mt-2 text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-forest-soft">
+        <p className="mt-1 text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-forest-soft md:mt-2 md:text-[0.72rem] md:tracking-[0.2em]">
           {person.role}
         </p>
       </article>
