@@ -53,6 +53,7 @@ export async function PATCH(request: Request, context: Context) {
       category = COALESCE(${category}, category),
       location = COALESCE(${location}, location),
       is_public = COALESCE(${typeof body.isPublic === "boolean" ? body.isPublic : null}, is_public),
+      featured = COALESCE(${typeof body.featured === "boolean" ? body.featured : null}, featured),
       cover_image = CASE WHEN ${coverId === undefined} THEN cover_image ELSE ${coverUrl ?? null} END,
       cover_image_alt = CASE WHEN ${coverId === undefined} THEN cover_image_alt ELSE ${coverAlt ?? null} END,
       updated_at = now()
