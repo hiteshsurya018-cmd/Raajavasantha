@@ -351,21 +351,30 @@ export type Trustee = {
   role: string;
 };
 
+
+export type Trustee = {
+  name: string;
+  role: string;
+  image?: string;
+};
+
 export const leadership: Trustee[] = [
   {
     name: "Shruthi R",
     role: "President",
+    image: "/images/team/shruthi-r.jpg",
   },
 
   {
     name: "Vasantha Raj",
     role: "Secretary",
+    image: "/images/team/vasantha-raj.jpg",
   },
 
   {
     name: "Shashank Rajgopal",
     role: "Treasurer",
-    image: "/images/team/shashank-rajgopal.jpg"
+    image: "/images/team/shashank-rajgopal.jpg",
   },
 ];
 
