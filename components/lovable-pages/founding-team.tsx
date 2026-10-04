@@ -64,7 +64,7 @@ export default function FoundingTeam() {
 </Reveal>
 
 {/* First row — 2 centered cards */}
-<div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-6">
+<div className="mt-10 grid grid-cols-2 gap-6 md:grid-cols-6">
   {trustees.slice(0, 2).map((person, i) => (
     <Reveal
       key={person.name}
@@ -93,7 +93,7 @@ export default function FoundingTeam() {
 </div>
 
 {/* Second row — 3 cards */}
-<div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
+<div className="mt-6 grid grid-cols-2 gap-6 md:grid-cols-3">
   {trustees.slice(2, 5).map((person, i) => (
     <Reveal key={person.name} delay={i * 70}>
       <article className="flex h-full min-h-[290px] flex-col items-start border border-forest-deep/12 bg-card p-10 lg:p-12">
