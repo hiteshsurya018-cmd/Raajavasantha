@@ -365,6 +365,7 @@ export const leadership: Trustee[] = [
   {
     name: "Shashank Rajgopal",
     role: "Treasurer",
+    image: "/images/team/shashank-rajgopal.jpg"
   },
 ];
 
