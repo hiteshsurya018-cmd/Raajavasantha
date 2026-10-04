@@ -16,9 +16,11 @@ const allValue = "all";
 
 export function ProjectDiscovery({
   projects,
+  featuredProjects,
   facets,
 }: {
   projects: TrustProject[];
+  featuredProjects: TrustProject[];
   facets: ProjectFacets;
 }) {
   const [query, setQuery] = useState("");
@@ -68,7 +70,7 @@ export function ProjectDiscovery({
 
   return (
     <section className="bg-ivory" id="project-discovery">
-      <div className="mx-auto max-w-[80rem] px-5 py-16 lg:px-10 lg:py-24">
+      <div className="mx-auto max-w-[80rem] px-5 pb-16 pt-36 lg:px-10 lg:pb-24 lg:pt-40">
         <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:gap-16">
           <div>
             <p className="eyebrow">Discover</p>
@@ -143,7 +145,26 @@ export function ProjectDiscovery({
           </div>
         </div>
 
-        <div className="mt-12 flex items-center justify-between gap-4 border-y border-forest-deep/10 py-4">
+        {featuredProjects.length > 0 && (
+          <div className="mt-16 border-y border-forest-deep/10 py-12 lg:py-16">
+            <p className="eyebrow">Featured projects</p>
+            <div className="mt-8 grid gap-6 md:grid-cols-2">
+              {featuredProjects.map((project, index) => (
+                <ProjectCard
+                  key={project.slug}
+                  project={project}
+                  priority={index === 0}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className={featuredProjects.length > 0 ? "mt-16" : "mt-12"}>
+          <p className="eyebrow">All projects</p>
+        </div>
+
+        <div className="mt-6 flex items-center justify-between gap-4 border-y border-forest-deep/10 py-4">
           <p className="text-sm text-muted-foreground" aria-live="polite">
             {filteredProjects.length}{" "}
             {filteredProjects.length === 1 ? "record" : "records"} shown
