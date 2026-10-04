@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { ProjectMediaGallery } from "@/components/projects/ProjectMediaGallery";
 import {
   getProjectBySlug,
   getProjectDateLabel,
@@ -112,44 +112,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailProps) 
           </div>
 
           {project.gallery.length > 0 ? (
-            <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:gap-5">
-              {project.gallery.map((media) => (
-                <figure
-                  key={`${media.src}-${media.alt}`}
-                  className="overflow-hidden border border-forest-deep/10 bg-card"
-                >
-                  <div className="relative aspect-square overflow-hidden bg-black">
-                    {media.resourceType === "video" ? (
-                      <video
-                        controls
-                        preload="metadata"
-                        playsInline
-                        aria-label={media.alt}
-                        className="h-full w-full object-contain"
-                      >
-                        <source
-                          src={media.src}
-                          type={media.mimeType ?? "video/mp4"}
-                        />
-                      </video>
-                    ) : (
-                      <Image
-                        src={media.src}
-                        alt={media.alt}
-                        fill
-                        sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
-                        className="object-cover"
-                      />
-                    )}
-                  </div>
-                  {media.caption && (
-                    <figcaption className="p-3 text-xs leading-relaxed text-muted-foreground">
-                      {media.caption}
-                    </figcaption>
-                  )}
-                </figure>
-              ))}
-            </div>
+            <ProjectMediaGallery media={project.gallery} />
           ) : (
             <div className="mt-6 border border-forest-deep/15 bg-card px-6 py-12 text-center">
               <p className="text-sm text-muted-foreground">
