@@ -1,175 +1,70 @@
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { PageHero } from "@/components/site/PageHero";
-import { Reveal } from "@/components/site/Reveal";
-import { leadership, trustees } from "@/data/site";
+import {
+  GraduationCap,
+  HeartPulse,
+  Users,
+  Utensils,
+  Building2,
+  Sprout,
+  Sun,
+  Recycle,
+  Trophy,
+  HandHeart,
+  PawPrint,
+  LifeBuoy,
+  type LucideIcon,
+} from "lucide-react";
 
-function initials(name: string) {
-  return name
-    .split(/\s+/)
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
+export const TRUST_NAME = "Rajavasantha Welfare Trust";
 
-export default function FoundingTeam() {
-  return (
-    <>
-      <PageHero
-        eyebrow="Founding Team"
-        title="Founding Team"
-        intro="The trustees entrusted with guiding Rajavasantha Welfare Trust."
-      />
+export type Trustee = {
+  name: string;
+  role: string;
+  image?: string;
+};
 
-      <section className="bg-ivory">
-        <div className="mx-auto max-w-[80rem] px-5 py-20 lg:px-10 lg:py-28">
+export type FoundingMember = {
+  name: string;
+  role: string;
+  image?: string;
+};
 
-          {/* =========================
-              OFFICE BEARERS
-          ========================== */}
-          <Reveal>
-            <p className="eyebrow">Office bearers</p>
-          </Reveal>
+export const leadership: Trustee[] = [
+  {
+    name: "Shruthi R",
+    role: "President",
+  },
+  {
+    name: "Vasantha Raj",
+    role: "Secretary",
+  },
+  {
+    name: "Shashank Rajgopal",
+    role: "Treasurer",
+    image: "/images/team/shashank-rajgopal.jpg",
+  },
+];
 
-          <div className="mt-10 grid gap-px bg-forest-deep/10 md:grid-cols-3">
-            {leadership.map((person, i) => (
-              <Reveal key={person.name} delay={i * 80}>
-                <article className="flex h-full flex-col items-start bg-card p-10 lg:p-12">
-                  {/* Avatar */}
-                  <span
-                    aria-hidden="true"
-                    className="flex h-24 w-24 items-center justify-center rounded-full bg-forest-deep font-display text-3xl text-gold"
-                  >
-                    {initials(person.name)}
-                  </span>
+export const trustees: Trustee[] = [
+  {
+    name: "H Raj Gopal",
+    role: "Trustee",
+  },
+  {
+    name: "Umesh G",
+    role: "Trustee",
+  },
+  {
+    name: "Mamatha B",
+    role: "Trustee",
+  },
+  {
+    name: "Nagalambika B",
+    role: "Trustee",
+  },
+  {
+    name: "Chaluvaraya Swamy",
+    role: "Trustee",
+  },
+];
 
-                  <h2 className="mt-8 font-display text-3xl text-forest-deep">
-                    {person.name}
-                  </h2>
-
-                  <p className="mt-2 text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-gold">
-                    {person.role}
-                  </p>
-                </article>
-              </Reveal>
-            ))}
-          </div>
-
-          {/* =========================
-              BOARD OF TRUSTEES
-          ========================== */}
-          <Reveal className="mt-20">
-            <p className="eyebrow">Board of Trustees</p>
-          </Reveal>
-
-          {/* First row — 2 centered cards */}
-          <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-6 md:gap-6">
-            {trustees.slice(0, 2).map((person, i) => (
-              <Reveal
-                key={person.name}
-                delay={i * 70}
-                className={
-                  i === 0
-                    ? "md:col-span-2 md:col-start-2"
-                    : "md:col-span-2"
-                }
-              >
-                <article className="flex aspect-square h-full flex-col items-start border border-forest-deep/12 bg-card p-2.5 md:aspect-auto md:min-h-[290px] md:p-10 lg:p-12">
-
-                  {/* Mobile photo placeholder */}
-                  <div className="flex aspect-[4/3] w-full items-center justify-center bg-forest-deep/10 md:hidden">
-                    <span
-                      aria-hidden="true"
-                      className="font-display text-4xl text-forest-deep/30"
-                    >
-                      {initials(person.name)}
-                    </span>
-                  </div>
-
-                  {/* Desktop avatar — unchanged */}
-                  <span
-                    aria-hidden="true"
-                    className="hidden h-14 w-14 items-center justify-center rounded-full bg-forest-deep font-display text-xl text-gold md:flex md:h-24 md:w-24 md:text-3xl"
-                  >
-                    {initials(person.name)}
-                  </span>
-
-                  <h2 className="mt-auto break-words font-display text-lg leading-5 text-forest-deep md:mt-8 md:break-normal md:text-3xl md:leading-9">
-                    {person.name}
-                  </h2>
-
-                  <p className="mt-1 text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-forest-soft md:mt-2 md:text-[0.72rem] md:tracking-[0.2em]">
-                    {person.role}
-                  </p>
-                </article>
-              </Reveal>
-            ))}
-          </div>
-
-          {/* Second row — 3 cards */}
-          <div className="mt-3 grid grid-cols-4 gap-3 md:mt-6 md:grid-cols-3 md:gap-6">
-            {trustees.slice(2, 5).map((person, i) => (
-              <Reveal
-                key={person.name}
-                delay={i * 70}
-                className={`col-span-2 md:col-span-1 ${
-                  i === 2 ? "col-start-2 md:col-start-auto" : ""
-                }`}
-              >
-                <article className="flex aspect-square h-full flex-col items-start border border-forest-deep/12 bg-card p-2.5 md:aspect-auto md:min-h-[290px] md:p-10 lg:p-12">
-
-                  {/* Mobile photo placeholder */}
-                  <div className="flex aspect-[4/3] w-full items-center justify-center bg-forest-deep/10 md:hidden">
-                    <span
-                      aria-hidden="true"
-                      className="font-display text-4xl text-forest-deep/30"
-                    >
-                      {initials(person.name)}
-                    </span>
-                  </div>
-
-                  {/* Desktop avatar — unchanged */}
-                  <span
-                    aria-hidden="true"
-                    className="hidden h-14 w-14 items-center justify-center rounded-full bg-forest-deep font-display text-xl text-gold md:flex md:h-24 md:w-24 md:text-3xl"
-                  >
-                    {initials(person.name)}
-                  </span>
-
-                  <h2 className="mt-auto break-words font-display text-lg leading-5 text-forest-deep md:mt-8 md:break-normal md:text-3xl md:leading-9">
-                    {person.name}
-                  </h2>
-
-                  <p className="mt-1 text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-forest-soft md:mt-2 md:text-[0.72rem] md:tracking-[0.2em]">
-                    {person.role}
-                  </p>
-                </article>
-              </Reveal>
-            ))}
-          </div>
-
-          {/* =========================
-              FOOTER INFORMATION
-          ========================== */}
-          <Reveal className="mt-16 max-w-2xl">
-            <p className="text-[0.95rem] leading-relaxed text-muted-foreground">
-              Leadership profiles will be expanded as the Trust&apos;s public
-              communications develop. Personal contact details of trustees are
-              not published on this website.
-            </p>
-
-            <Link
-              href="/contact"
-              className="link-underline mt-6 font-medium text-forest-deep"
-            >
-              Contact the Trust
-              <ArrowRight className="h-4 w-4 text-gold" />
-            </Link>
-          </Reveal>
-
-        </div>
-      </section>
-    </>
-  );
-}
+export const foundingMembers: FoundingMember[] = [];
