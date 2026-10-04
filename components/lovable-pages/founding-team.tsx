@@ -75,12 +75,12 @@ export default function FoundingTeam() {
         {/* Avatar */}
         <span
           aria-hidden="true"
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-forest-deep font-display text-lg text-gold md:h-24 md:w-24 md:text-3xl"
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-forest-deep font-display text-xl text-gold md:h-24 md:w-24 md:text-3xl"
         >
           {initials(person.name)}
         </span>
 
-        <h2 className="mt-2 break-words font-display text-lg leading-5 text-forest-deep md:mt-8 md:break-normal md:text-3xl md:leading-9">
+        <h2 className="mt-auto break-words font-display text-lg leading-5 text-forest-deep md:mt-8 md:break-normal md:text-3xl md:leading-9">
           {person.name}
         </h2>
 
@@ -104,12 +104,12 @@ export default function FoundingTeam() {
         {/* Avatar */}
         <span
           aria-hidden="true"
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-forest-deep font-display text-lg text-gold md:h-24 md:w-24 md:text-3xl"
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-forest-deep font-display text-xl text-gold md:h-24 md:w-24 md:text-3xl"
         >
           {initials(person.name)}
         </span>
 
-        <h2 className="mt-2 break-words font-display text-lg leading-5 text-forest-deep md:mt-8 md:break-normal md:text-3xl md:leading-9">
+        <h2 className="mt-auto break-words font-display text-lg leading-5 text-forest-deep md:mt-8 md:break-normal md:text-3xl md:leading-9">
           {person.name}
         </h2>
 
