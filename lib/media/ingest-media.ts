@@ -58,6 +58,31 @@ type IngestMediaInput = {
   originalFilename?: string | null;
 };
 
+export type DuplicateReason =
+  | "SAME_GOOGLE_ITEM"
+  | "SAME_FILE"
+  | "RACE_CONDITION"
+  | "UNKNOWN_DUPLICATE";
+
+function duplicateResult(reason: DuplicateReason, row: Record<string, unknown>, message: string) {
+  console.info("Media import duplicate", {
+    duplicateReason: reason,
+    existingMediaId: row.id,
+    existingProjectId: row.project_id,
+    fingerprintPrefix: typeof row.media_fingerprint === "string" ? row.media_fingerprint.slice(0, 12) : undefined,
+  });
+  return {
+    success: true as const,
+    duplicate: true as const,
+    duplicateReason: reason,
+    message,
+    existingMediaId: String(row.id),
+    existingProjectId: String(row.project_id),
+    existingProjectName: row.project_name ? String(row.project_name) : undefined,
+    image: row,
+  };
+}
+
 function uploadToCloudinary(
   buffer: Buffer,
   folder: string,
@@ -166,17 +191,34 @@ export async function ingestMedia({
   let latitude: number | null = null;
   let longitude: number | null = null;
   let capturedAt: Date | null = null;
+  let locationAccuracy: number | null = null;
+  let cameraMake: string | null = null;
+  let cameraModel: string | null = null;
+  let lensModel: string | null = null;
+  let aperture: number | null = null;
+  let exposureTime: string | null = null;
+  let iso: number | null = null;
+  let focalLength: number | null = null;
   if (!isVideo) {
     try {
-      const metadata = await parseExif(buffer, { gps: true, pick: ["latitude", "longitude", "DateTimeOriginal"] }) as {
-        latitude?: number; longitude?: number; DateTimeOriginal?: Date;
+      const metadata = await parseExif(buffer, { gps: true, pick: ["latitude", "longitude", "GPSHPositioningError", "DateTimeOriginal", "Make", "Model", "LensModel", "FNumber", "ExposureTime", "ISO", "FocalLength"] }) as {
+        latitude?: number; longitude?: number; DateTimeOriginal?: Date; Make?: string; Model?: string;
+        GPSHPositioningError?: number; LensModel?: string; FNumber?: number; ExposureTime?: number | string; ISO?: number; FocalLength?: number;
       } | undefined;
       const candidateLatitude = Number(metadata?.latitude);
       const candidateLongitude = Number(metadata?.longitude);
       if (Number.isFinite(candidateLatitude) && Number.isFinite(candidateLongitude) && candidateLatitude >= -90 && candidateLatitude <= 90 && candidateLongitude >= -180 && candidateLongitude <= 180 && !(candidateLatitude === 0 && candidateLongitude === 0)) {
         latitude = candidateLatitude; longitude = candidateLongitude;
+        locationAccuracy = Number.isFinite(metadata?.GPSHPositioningError) ? Number(metadata?.GPSHPositioningError) : null;
       }
       if (metadata?.DateTimeOriginal instanceof Date && !Number.isNaN(metadata.DateTimeOriginal.getTime())) capturedAt = metadata.DateTimeOriginal;
+      cameraMake = metadata?.Make?.trim() || null;
+      cameraModel = metadata?.Model?.trim() || null;
+      lensModel = metadata?.LensModel?.trim() || null;
+      aperture = Number.isFinite(metadata?.FNumber) ? Number(metadata?.FNumber) : null;
+      exposureTime = metadata?.ExposureTime === undefined ? null : String(metadata.ExposureTime).slice(0, 80);
+      iso = Number.isInteger(metadata?.ISO) ? Number(metadata?.ISO) : null;
+      focalLength = Number.isFinite(metadata?.FocalLength) ? Number(metadata?.FocalLength) : null;
     } catch {
       // Missing or malformed EXIF must never prevent media ingestion.
     }
@@ -184,15 +226,17 @@ export async function ingestMedia({
 
   if (sourceRef) {
     const sourceRows = (await sql`
-      SELECT id, project_id, src, alt, caption, source, sort_order,
+      SELECT gallery.id, gallery.project_id, gallery.src, gallery.alt, gallery.caption, gallery.source, gallery.sort_order,
         cloudinary_public_id, cloudinary_asset_id, media_fingerprint,
-        resource_type, format, width, height, bytes, source_ref, created_at
-      FROM project_gallery_images
-      WHERE source = ${source} AND source_ref = ${sourceRef}
+        resource_type, format, width, height, bytes, source_ref, gallery.created_at,
+        project.title AS project_name
+      FROM project_gallery_images gallery
+      JOIN projects project ON project.id = gallery.project_id
+      WHERE gallery.source = ${source} AND gallery.source_ref = ${sourceRef}
       LIMIT 1
     `) as Record<string, unknown>[];
     if (sourceRows.length > 0) {
-      return { success: true, duplicate: true, message: "Image already exists.", image: sourceRows[0] };
+      return duplicateResult(source === "google-photos" ? "SAME_GOOGLE_ITEM" : "UNKNOWN_DUPLICATE", sourceRows[0], source === "google-photos" ? "This Google Photos item is already imported." : "This media item is already imported.");
     }
   }
 
@@ -204,8 +248,8 @@ export async function ingestMedia({
    */
   const existingRows = (await sql`
     SELECT
-      id,
-      project_id,
+      gallery.id,
+      gallery.project_id,
       src,
       alt,
       caption,
@@ -220,19 +264,16 @@ export async function ingestMedia({
       height,
       bytes,
       source_ref,
-      created_at
-    FROM project_gallery_images
-    WHERE media_fingerprint = ${mediaFingerprint}
+      gallery.created_at,
+      project.title AS project_name
+    FROM project_gallery_images gallery
+    JOIN projects project ON project.id = gallery.project_id
+    WHERE gallery.media_fingerprint = ${mediaFingerprint}
     LIMIT 1
   `) as Record<string, unknown>[];
 
   if (existingRows.length > 0) {
-    return {
-      success: true,
-      duplicate: true,
-      message: "Image already exists. First implementation retained.",
-      image: existingRows[0],
-    };
+    return duplicateResult("SAME_FILE", existingRows[0], "The same file is already imported.");
   }
 
   /*
@@ -287,6 +328,16 @@ export async function ingestMedia({
         , latitude
         , longitude
         , captured_at
+        , location_accuracy
+        , location_source
+        , location_precision
+        , camera_make
+        , camera_model
+        , lens_model
+        , aperture
+        , exposure_time
+        , iso
+        , focal_length
       )
       VALUES (
         gen_random_uuid(),
@@ -310,6 +361,16 @@ export async function ingestMedia({
         , ${latitude}
         , ${longitude}
         , ${capturedAt}
+        , ${locationAccuracy}
+        , ${latitude !== null && longitude !== null ? "exif" : null}
+        , ${latitude !== null && longitude !== null ? "exact" : "unknown"}
+        , ${cameraMake}
+        , ${cameraModel}
+        , ${lensModel}
+        , ${aperture}
+        , ${exposureTime}
+        , ${iso}
+        , ${focalLength}
       )
       RETURNING
         id,
@@ -328,6 +389,20 @@ export async function ingestMedia({
         height,
         bytes,
         source_ref,
+        latitude,
+        longitude,
+        location_label,
+        location_source,
+        location_precision,
+        location_verified,
+        captured_at,
+        camera_make,
+        camera_model,
+        lens_model,
+        aperture,
+        exposure_time,
+        iso,
+        focal_length,
         created_at
     `) as Record<string, unknown>[];
 
@@ -365,9 +440,11 @@ export async function ingestMedia({
         height,
         bytes,
         source_ref,
-        created_at
-      FROM project_gallery_images
-      WHERE media_fingerprint = ${mediaFingerprint}
+        gallery.created_at,
+        project.title AS project_name
+      FROM project_gallery_images gallery
+      JOIN projects project ON project.id = gallery.project_id
+      WHERE gallery.media_fingerprint = ${mediaFingerprint}
       LIMIT 1
     `) as Record<string, unknown>[];
 
@@ -385,13 +462,7 @@ export async function ingestMedia({
         // Preserve successful duplicate resolution.
       }
 
-      return {
-        success: true,
-        duplicate: true,
-        message:
-          "Image already exists. First implementation retained.",
-        image: duplicateRows[0],
-      };
+      return duplicateResult("RACE_CONDITION", duplicateRows[0], "This file was imported by another request.");
     }
 
     /*

@@ -30,6 +30,7 @@ export async function getPublicMapGeoJson(): Promise<MapFeatureCollection> {
     WHERE p.is_public = true AND g.approved = true
       AND g.latitude IS NOT NULL AND g.longitude IS NOT NULL
       AND g.location_visibility <> 'hidden'
+      AND g.location_verified = true
   ` as Record<string, unknown>[];
   for (const row of mediaRows) {
     const visibility = String(row.location_visibility);

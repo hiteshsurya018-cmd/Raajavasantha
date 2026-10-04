@@ -11,6 +11,10 @@ export type MediaPhoto = {
   resource_type: string | null;
   latitude: number | null; longitude: number | null; location_accuracy: number | null;
   captured_at: string | null; location_visibility: "exact" | "approximate" | "area" | "hidden"; location_label: string | null;
+  location_source: "google_photos" | "admin" | "exif" | "project" | null;
+  location_precision: "exact" | "area" | "unknown"; location_verified: boolean;
+  camera_make: string | null; camera_model: string | null; lens_model: string | null;
+  aperture: number | null; exposure_time: string | null; iso: number | null; focal_length: number | null;
 };
 export type MediaFolder = {
   id: string; name: string; slug: string; description: string | null;
@@ -79,6 +83,8 @@ export async function getFolderPhotos(projectId: string, publicOnly = false) {
       width, height, src AS cloudinary_url, src AS thumbnail_url, source, source_ref,
       alt, caption, created_at, approved, resource_type,
       latitude, longitude, location_accuracy, captured_at, location_visibility, location_label
+      , location_source, location_precision, location_verified
+      , camera_make, camera_model, lens_model, aperture, exposure_time, iso, focal_length
     FROM project_gallery_images
     WHERE project_id = ${projectId} AND (${publicOnly} = false OR approved = true)
     ORDER BY sort_order, created_at DESC

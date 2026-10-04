@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 type MediaItem = { id: string | null; fileName: string | null; baseUrl: string | null };
-type Result = { imported: number; skipped: number; failed: string[] };
+type DuplicateDetail = { filename: string; reason?: string; existingProjectName?: string };
+type Result = { imported: number; alreadyImported: DuplicateDetail[]; failed: string[] };
+type ImportResponse = { duplicate: boolean; duplicateReason?: string; existingProjectName?: string };
 type Props = { connected: boolean; reconnectRequired?: boolean; projectId?: string; projectSlug?: string; projectTitle?: string; folderId?: string; folderName?: string };
 type Polling = { pollInterval?: string; timeoutIn?: string };
 
@@ -86,15 +88,16 @@ export function GooglePhotosImporter(props: Props) {
 
   async function importItems() {
     setBusy(true); setError(""); setResult(null); setProgress({ done: 0, total: items.length });
-    const summary: Result = { imported: 0, skipped: 0, failed: [] };
+    const summary: Result = { imported: 0, alreadyImported: [], failed: [] };
     for (const item of items) {
       try {
-        const response = await read<{ duplicate: boolean }>(await fetch("/api/google/photos/picker/import", {
+        const response = await read<ImportResponse>(await fetch("/api/google/photos/picker/import", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ projectId: props.projectId, folderId: props.folderId, sessionId, mediaItemId: item.id, alt: `${props.folderName ?? props.projectTitle ?? "Rajavasantha"} photograph` }),
         }));
-        if (response.duplicate) summary.skipped += 1; else summary.imported += 1;
+        if (response.duplicate) summary.alreadyImported.push({ filename: item.fileName ?? "Photograph", reason: response.duplicateReason, existingProjectName: response.existingProjectName });
+        else summary.imported += 1;
       } catch (reason) {
         summary.failed.push(`${item.fileName ?? "Photograph"}: ${reason instanceof Error ? reason.message : "Import failed."}`);
       }
@@ -143,7 +146,7 @@ export function GooglePhotosImporter(props: Props) {
         </div>
       )}
 
-      {result && <div className="mt-8 border border-gold/25 bg-black/20 p-6 text-ivory" aria-live="polite"><h3 className="font-display text-3xl">Import complete</h3><p className="mt-3">{result.imported} imported · {result.skipped} skipped · {result.failed.length} failed</p>{!!result.failed.length && <ul className="mt-4 space-y-2 text-sm text-red-200">{result.failed.map((message) => <li key={message}>{message}</li>)}</ul>}<Link href={returnTo} className="mt-5 inline-flex font-semibold text-gold underline">Return to folder</Link></div>}
+      {result && <div className="mt-8 border border-gold/25 bg-black/20 p-6 text-ivory" aria-live="polite"><h3 className="font-display text-3xl">Import complete</h3><p className="mt-3">{result.imported} imported · {result.alreadyImported.length} already imported · {result.failed.length} failed</p>{result.alreadyImported.map((item, index) => <p key={item.filename + index} className="mt-3 text-sm text-gold">{item.filename}: already imported{item.existingProjectName ? " in " + item.existingProjectName : ""}{item.reason === "SAME_FILE" ? " (same file)" : item.reason === "SAME_GOOGLE_ITEM" ? " (same Google Photos item)" : item.reason === "RACE_CONDITION" ? " (another import completed first)" : ""}.</p>)}{!!result.failed.length && <ul className="mt-4 space-y-2 text-sm text-red-200">{result.failed.map((message) => <li key={message}>{message}</li>)}</ul>}<Link href={returnTo} className="mt-5 inline-flex font-semibold text-gold underline">Return to folder</Link></div>}
     </section>
   );
 }

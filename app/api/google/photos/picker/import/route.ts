@@ -348,6 +348,17 @@ export async function POST(request: Request) {
       ...common,
     });
 
+    console.info("Google Photos media import result", {
+      mediaItemId,
+      filename,
+      bytes: buffer.length,
+      duplicate: result.duplicate,
+      duplicateReason: "duplicateReason" in result ? result.duplicateReason : undefined,
+      existingMediaId: "existingMediaId" in result ? result.existingMediaId : undefined,
+      existingProjectId: "existingProjectId" in result ? result.existingProjectId : undefined,
+      exifGpsPresent: Boolean(result.image?.latitude && result.image?.longitude),
+    });
+
     return Response.json({
       success: true,
       message:
@@ -355,6 +366,10 @@ export async function POST(request: Request) {
           ? "Google Photos media already exists in the project gallery."
           : "Google Photos media imported successfully.",
       duplicate: result.duplicate,
+      duplicateReason: "duplicateReason" in result ? result.duplicateReason : undefined,
+      existingMediaId: "existingMediaId" in result ? result.existingMediaId : undefined,
+      existingProjectId: "existingProjectId" in result ? result.existingProjectId : undefined,
+      existingProjectName: "existingProjectName" in result ? result.existingProjectName : undefined,
       filename,
       mediaItemId,
       sessionId,

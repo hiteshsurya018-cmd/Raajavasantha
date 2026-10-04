@@ -68,6 +68,16 @@ create table if not exists project_gallery_images (
   captured_at timestamptz,
   location_visibility text not null default 'hidden' check (location_visibility in ('exact', 'approximate', 'area', 'hidden')),
   location_label text,
+  location_source text check (location_source is null or location_source in ('google_photos', 'admin', 'exif', 'project')),
+  location_precision text not null default 'unknown' check (location_precision in ('exact', 'area', 'unknown')),
+  location_verified boolean not null default false,
+  camera_make text,
+  camera_model text,
+  lens_model text,
+  aperture numeric(10, 4),
+  exposure_time text,
+  iso integer,
+  focal_length numeric(10, 4),
   approved boolean not null default true,
   created_at timestamptz not null default now()
 );

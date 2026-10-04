@@ -9,7 +9,9 @@ import type { MediaFolder } from "@/lib/media/library";
 type Connection = { connected: boolean; reconnectRequired?: boolean };
 type GoogleItem = { id: string | null; fileName: string | null; baseUrl: string | null };
 type Polling = { pollInterval?: string; timeoutIn?: string };
-type ImportResult = { imported: number; skipped: number; failed: string[] };
+type DuplicateDetail = { filename: string; reason?: string; existingProjectId?: string; existingProjectName?: string };
+type ImportResult = { imported: number; alreadyImported: DuplicateDetail[]; failed: string[] };
+type ImportResponse = { duplicate: boolean; duplicateReason?: string; existingProjectId?: string; existingProjectName?: string };
 
 async function read<T>(response: Response): Promise<T> {
   const data = await response.json() as T & { error?: string };
@@ -24,6 +26,7 @@ function duration(value?: string, fallback = 2000) {
 export function MediaLibraryAdmin({ initialFolders, connection }: { initialFolders: MediaFolder[]; connection: Connection }) {
   const [folders, setFolders] = useState(initialFolders);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [busyId, setBusyId] = useState("");
   const [googleItems, setGoogleItems] = useState<GoogleItem[]>([]);
   const [pickerSessionId, setPickerSessionId] = useState("");
@@ -160,14 +163,15 @@ export function MediaLibraryAdmin({ initialFolders, connection }: { initialFolde
     if (!project) { setError("Choose a valid destination project."); return; }
     setDestinationId(projectId); setPickerBusy(true); setError(""); setImportResult(null);
     setImportProgress({ done: 0, total: googleItems.length });
-    const summary: ImportResult = { imported: 0, skipped: 0, failed: [] };
+    const summary: ImportResult = { imported: 0, alreadyImported: [], failed: [] };
     for (const item of googleItems) {
       try {
-        const response = await read<{ duplicate: boolean }>(await fetch("/api/google/photos/picker/import", {
+        const response = await read<ImportResponse>(await fetch("/api/google/photos/picker/import", {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ folderId: projectId, sessionId: pickerSessionId, mediaItemId: item.id, alt: `${project.name} photograph` }),
         }));
-        if (response.duplicate) summary.skipped += 1; else summary.imported += 1;
+        if (response.duplicate) summary.alreadyImported.push({ filename: item.fileName ?? "Photograph", reason: response.duplicateReason, existingProjectId: response.existingProjectId, existingProjectName: response.existingProjectName });
+        else summary.imported += 1;
       } catch (reason) { summary.failed.push(`${item.fileName ?? "Photograph"}: ${reason instanceof Error ? reason.message : "Import failed."}`); }
       setImportProgress((value) => ({ ...value, done: value.done + 1 }));
     }
@@ -212,6 +216,7 @@ export function MediaLibraryAdmin({ initialFolders, connection }: { initialFolde
   async function toggleFeatured(folder: MediaFolder) {
     setBusyId(folder.id);
     setError("");
+    setNotice("");
     try {
       const data = await read<{ folder: MediaFolder }>(await fetch(`/api/admin/folders/${folder.id}`, {
         method: "PATCH",
@@ -219,6 +224,7 @@ export function MediaLibraryAdmin({ initialFolders, connection }: { initialFolde
         body: JSON.stringify({ featured: !folder.featured }),
       }));
       setFolders((items) => items.map((item) => item.id === folder.id ? { ...item, featured: data.folder.featured, updated_at: data.folder.updated_at } : item));
+      setNotice(`${folder.name} is now ${data.folder.featured ? "featured" : "not featured"}.`);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Unable to update featured status.");
     } finally {
@@ -266,6 +272,7 @@ export function MediaLibraryAdmin({ initialFolders, connection }: { initialFolde
         </header>
 
         {error && <p role="alert" className="mt-6 border border-red-300/30 bg-red-950/30 p-4 text-sm text-red-100">{error}</p>}
+        {notice && <p role="status" className="mt-6 border border-gold/25 bg-gold/10 px-4 py-3 text-sm text-ivory">{notice}</p>}
 
         {!!googleItems.length && (
           <section className="mt-5 border border-gold/30 bg-black/15 p-4 sm:p-5" aria-label="Selected Google Photos media">
@@ -284,7 +291,7 @@ export function MediaLibraryAdmin({ initialFolders, connection }: { initialFolde
               </div>
             </div>
             {pickerBusy && <div className="mt-4 h-1 bg-ivory/10"><div className="h-full bg-gold transition-[width]" style={{ width: String(importProgress.total ? importProgress.done / importProgress.total * 100 : 0) + "%" }} /></div>}
-            {importResult && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-ivory/10 pt-4 text-sm" aria-live="polite"><p className="text-ivory/65"><span className="font-semibold text-ivory">Import complete:</span> {importResult.imported} imported · {importResult.skipped} skipped · {importResult.failed.length} failed</p>{destinationId && <Link href={"/admin/folders/" + destinationId} className="font-semibold text-gold underline">View project</Link>}</div>}
+            {importResult && <div className="mt-4 border-t border-ivory/10 pt-4 text-sm" aria-live="polite"><div className="flex flex-wrap items-center justify-between gap-3"><p className="text-ivory/65"><span className="font-semibold text-ivory">Import complete:</span> {importResult.imported} imported · {importResult.alreadyImported.length} already imported · {importResult.failed.length} failed</p>{destinationId && <Link href={"/admin/folders/" + destinationId} className="font-semibold text-gold underline">View project</Link>}</div>{importResult.alreadyImported.map((item, index) => <p key={item.filename + index} className="mt-2 text-xs text-gold">{item.filename}: already imported{item.existingProjectName ? " in " + item.existingProjectName : ""}{item.reason === "SAME_FILE" ? " (same file)" : item.reason === "SAME_GOOGLE_ITEM" ? " (same Google Photos item)" : item.reason === "RACE_CONDITION" ? " (another import completed first)" : ""}.</p>)}</div>}
           </section>
         )}
 
