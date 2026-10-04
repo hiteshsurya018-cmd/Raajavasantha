@@ -1,12 +1,12 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { TrustProject } from "@/data/projects";
+import type { MapFeatureCollection } from "@/lib/geography";
 
-const LeafletProjectMap = dynamic(
+const MapLibreImpactMap = dynamic(
   () =>
-    import("./LeafletProjectMap").then(
-      (module) => module.LeafletProjectMap,
+    import("./MapLibreImpactMap").then(
+      (module) => module.MapLibreImpactMap,
     ),
   {
     ssr: false,
@@ -19,9 +19,9 @@ const LeafletProjectMap = dynamic(
 );
 
 export function ProjectMap({
-  projects,
+  data,
 }: {
-  projects: TrustProject[];
+  data: MapFeatureCollection;
 }) {
-  return <LeafletProjectMap projects={projects} />;
+  return <MapLibreImpactMap data={data} />;
 }

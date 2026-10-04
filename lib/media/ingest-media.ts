@@ -2,6 +2,7 @@ import "server-only";
 
 import { createHash } from "crypto";
 import { Readable } from "stream";
+import { parse as parseExif } from "exifr";
 
 import { sql } from "@/lib/db";
 import { cloudinary } from "@/lib/cloudinary";
@@ -162,6 +163,25 @@ export async function ingestMedia({
     .update(buffer)
     .digest("hex");
 
+  let latitude: number | null = null;
+  let longitude: number | null = null;
+  let capturedAt: Date | null = null;
+  if (!isVideo) {
+    try {
+      const metadata = await parseExif(buffer, { gps: true, pick: ["latitude", "longitude", "DateTimeOriginal"] }) as {
+        latitude?: number; longitude?: number; DateTimeOriginal?: Date;
+      } | undefined;
+      const candidateLatitude = Number(metadata?.latitude);
+      const candidateLongitude = Number(metadata?.longitude);
+      if (Number.isFinite(candidateLatitude) && Number.isFinite(candidateLongitude) && candidateLatitude >= -90 && candidateLatitude <= 90 && candidateLongitude >= -180 && candidateLongitude <= 180 && !(candidateLatitude === 0 && candidateLongitude === 0)) {
+        latitude = candidateLatitude; longitude = candidateLongitude;
+      }
+      if (metadata?.DateTimeOriginal instanceof Date && !Number.isNaN(metadata.DateTimeOriginal.getTime())) capturedAt = metadata.DateTimeOriginal;
+    } catch {
+      // Missing or malformed EXIF must never prevent media ingestion.
+    }
+  }
+
   if (sourceRef) {
     const sourceRows = (await sql`
       SELECT id, project_id, src, alt, caption, source, sort_order,
@@ -264,6 +284,9 @@ export async function ingestMedia({
         source_ref
         , original_filename
         , mime_type
+        , latitude
+        , longitude
+        , captured_at
       )
       VALUES (
         gen_random_uuid(),
@@ -284,6 +307,9 @@ export async function ingestMedia({
         ${sourceRef}
         , ${originalFilename}
         , ${storedMimeType}
+        , ${latitude}
+        , ${longitude}
+        , ${capturedAt}
       )
       RETURNING
         id,

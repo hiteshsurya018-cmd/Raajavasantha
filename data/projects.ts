@@ -40,6 +40,7 @@ export type TrustProject = {
   country: string;
   latitude?: number | null;
   longitude?: number | null;
+  locationVisibility?: "exact" | "approximate" | "area" | "hidden";
   year: number | "Pending";
   startDate?: string | null;
   endDate?: string | null;

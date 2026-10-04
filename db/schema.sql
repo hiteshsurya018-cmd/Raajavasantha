@@ -13,6 +13,7 @@ create table if not exists projects (
   country text not null default 'India',
   latitude numeric(9, 6),
   longitude numeric(9, 6),
+  location_visibility text not null default 'exact' check (location_visibility in ('exact', 'approximate', 'area', 'hidden')),
   year integer,
   start_date date,
   end_date date,
@@ -61,6 +62,12 @@ create table if not exists project_gallery_images (
   width integer,
   height integer,
   source_ref text,
+  latitude numeric(9, 6),
+  longitude numeric(9, 6),
+  location_accuracy numeric(10, 2),
+  captured_at timestamptz,
+  location_visibility text not null default 'hidden' check (location_visibility in ('exact', 'approximate', 'area', 'hidden')),
+  location_label text,
   approved boolean not null default true,
   created_at timestamptz not null default now()
 );

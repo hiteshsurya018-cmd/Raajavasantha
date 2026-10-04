@@ -3,6 +3,29 @@ import { cloudinary } from "@/lib/cloudinary";
 import { sql } from "@/lib/db";
 
 export const runtime = "nodejs";
+export async function PATCH(request: Request, context: { params: Promise<{ id: string; photoId: string }> }) {
+  const denied = await requireAdminApi(request, true); if (denied) return denied;
+  const { id, photoId } = await context.params;
+  let body: Record<string, unknown>; try { body = await request.json() as Record<string, unknown>; } catch { return Response.json({ success: false, error: "Malformed JSON request." }, { status: 400 }); }
+  const latitude = body.latitude === null || body.latitude === "" ? null : typeof body.latitude === "number" ? body.latitude : undefined;
+  const longitude = body.longitude === null || body.longitude === "" ? null : typeof body.longitude === "number" ? body.longitude : undefined;
+  const visibility = typeof body.locationVisibility === "string" ? body.locationVisibility : undefined;
+  if ((latitude === undefined) !== (longitude === undefined) || (latitude === null) !== (longitude === null)) return Response.json({ success: false, error: "Latitude and longitude must be supplied together." }, { status: 400 });
+  if (typeof latitude === "number" && (!Number.isFinite(latitude) || latitude < -90 || latitude > 90)) return Response.json({ success: false, error: "Invalid latitude." }, { status: 400 });
+  if (typeof longitude === "number" && (!Number.isFinite(longitude) || longitude < -180 || longitude > 180)) return Response.json({ success: false, error: "Invalid longitude." }, { status: 400 });
+  if (latitude === 0 && longitude === 0) return Response.json({ success: false, error: "0,0 is not accepted." }, { status: 400 });
+  if (visibility !== undefined && !["exact", "approximate", "area", "hidden"].includes(visibility)) return Response.json({ success: false, error: "Invalid location visibility." }, { status: 400 });
+  const rows = await sql`
+    UPDATE project_gallery_images SET
+      latitude = CASE WHEN ${latitude !== undefined} THEN ${latitude ?? null} ELSE latitude END,
+      longitude = CASE WHEN ${longitude !== undefined} THEN ${longitude ?? null} ELSE longitude END,
+      location_visibility = COALESCE(${visibility ?? null}, location_visibility)
+    WHERE id = ${photoId} AND project_id = ${id}
+    RETURNING id, latitude, longitude, location_visibility
+  `;
+  if (!rows.length) return Response.json({ success: false, error: "Media not found." }, { status: 404 });
+  return Response.json({ success: true, photo: rows[0] });
+}
 export async function DELETE(request: Request, context: { params: Promise<{ id: string; photoId: string }> }) {
   const denied = await requireAdminApi(request, true); if (denied) return denied;
   const { id, photoId } = await context.params; const rows = await sql`

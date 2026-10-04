@@ -34,6 +34,7 @@ type ProjectRow = {
   country: string;
   latitude: number | string | null;
   longitude: number | string | null;
+  location_visibility: "exact" | "approximate" | "area" | "hidden";
   year: number | null;
   start_date: string | null;
   end_date: string | null;
@@ -168,6 +169,7 @@ function mapProject(
 
     latitude,
     longitude,
+    locationVisibility: row.location_visibility,
 
     year: row.year ?? "Pending",
 
@@ -226,6 +228,7 @@ async function loadProjectsFromDatabase(): Promise<TrustProject[]> {
       country,
       latitude,
       longitude,
+      location_visibility,
       year,
       start_date,
       end_date,
@@ -337,6 +340,7 @@ export async function getProjectBySlug(
       country,
       latitude,
       longitude,
+      location_visibility,
       year,
       start_date,
       end_date,

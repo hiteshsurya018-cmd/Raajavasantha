@@ -33,11 +33,20 @@ export async function PATCH(request: Request, context: Context) {
   const description = typeof body.description === "string" ? body.description.trim() : null;
   const category = typeof body.category === "string" ? body.category.trim() : null;
   const location = typeof body.location === "string" ? body.location.trim() : null;
+  const latitude = body.latitude === null || body.latitude === "" ? null : typeof body.latitude === "number" ? body.latitude : undefined;
+  const longitude = body.longitude === null || body.longitude === "" ? null : typeof body.longitude === "number" ? body.longitude : undefined;
+  const locationVisibility = typeof body.locationVisibility === "string" ? body.locationVisibility : undefined;
   const coverId = typeof body.coverPhotoId === "string" ? body.coverPhotoId : body.coverPhotoId === null ? null : undefined;
+  if ("featured" in body && typeof body.featured !== "boolean") return Response.json({ success: false, error: "Featured must be a boolean." }, { status: 400 });
   if (name !== null && (!name || name.length > 120)) return Response.json({ success: false, error: "Invalid project name." }, { status: 400 });
   if (description !== null && description.length > 2000) return Response.json({ success: false, error: "Invalid project description." }, { status: 400 });
   if (category !== null && category.length > 120) return Response.json({ success: false, error: "Invalid category." }, { status: 400 });
   if (location !== null && location.length > 200) return Response.json({ success: false, error: "Invalid location." }, { status: 400 });
+  if ((latitude === undefined) !== (longitude === undefined) || (latitude === null) !== (longitude === null)) return Response.json({ success: false, error: "Latitude and longitude must be updated together." }, { status: 400 });
+  if (typeof latitude === "number" && (!Number.isFinite(latitude) || latitude < -90 || latitude > 90)) return Response.json({ success: false, error: "Latitude must be between -90 and 90." }, { status: 400 });
+  if (typeof longitude === "number" && (!Number.isFinite(longitude) || longitude < -180 || longitude > 180)) return Response.json({ success: false, error: "Longitude must be between -180 and 180." }, { status: 400 });
+  if (latitude === 0 && longitude === 0) return Response.json({ success: false, error: "0,0 is not accepted as a project location." }, { status: 400 });
+  if (locationVisibility !== undefined && !["exact", "approximate", "area", "hidden"].includes(locationVisibility)) return Response.json({ success: false, error: "Invalid location visibility." }, { status: 400 });
   let coverUrl: string | null | undefined; let coverAlt: string | null | undefined;
   if (coverId) {
     const photos = await sql`SELECT src, alt, resource_type FROM project_gallery_images WHERE id = ${coverId} AND project_id = ${id} LIMIT 1`;
@@ -52,6 +61,9 @@ export async function PATCH(request: Request, context: Context) {
       short_description = CASE WHEN ${description}::text IS NULL THEN short_description ELSE left(${description}, 320) END,
       category = COALESCE(${category}, category),
       location = COALESCE(${location}, location),
+      latitude = CASE WHEN ${latitude !== undefined} THEN ${latitude ?? null} ELSE latitude END,
+      longitude = CASE WHEN ${longitude !== undefined} THEN ${longitude ?? null} ELSE longitude END,
+      location_visibility = COALESCE(${locationVisibility ?? null}, location_visibility),
       is_public = COALESCE(${typeof body.isPublic === "boolean" ? body.isPublic : null}, is_public),
       featured = COALESCE(${typeof body.featured === "boolean" ? body.featured : null}, featured),
       cover_image = CASE WHEN ${coverId === undefined} THEN cover_image ELSE ${coverUrl ?? null} END,

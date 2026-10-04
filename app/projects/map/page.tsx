@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ProjectMap } from "@/components/projects/ProjectMap";
-import { getMappableProjects, getProjects } from "@/lib/projects";
+import { getPublicMapGeoJson } from "@/lib/geography";
 
 export const dynamic = "force-dynamic";
 
@@ -20,12 +20,11 @@ export const metadata: Metadata = {
 };
 
 export default async function ProjectsMapPage() {
-  const projects = await getProjects();
-  const mappableProjects = getMappableProjects(projects);
+  const data = await getPublicMapGeoJson();
 
   return (
     <>
-      <section className="bg-forest-deep pt-36 pb-16 text-ivory lg:pt-44 lg:pb-20">
+      <section className="bg-forest-deep pt-32 pb-12 text-ivory lg:pt-40 lg:pb-16">
         <div className="mx-auto max-w-[80rem] px-5 lg:px-10">
           <Link
             href="/projects"
@@ -34,18 +33,17 @@ export default async function ProjectsMapPage() {
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back to projects
           </Link>
-          <p className="eyebrow">Project locations</p>
+          <p className="eyebrow">Our reach across India</p>
           <h1 className="display-lg mt-6 max-w-4xl text-ivory">
-            A map for verified project records.
+            Every location represents a story.
           </h1>
           <p className="mt-7 max-w-2xl text-lg leading-relaxed text-ivory/75">
-            This view plots only records that include approved coordinates.
-            Current mapped records: {mappableProjects.length}.
+            Explore verified activities, contributions and communities through locations approved by the Trust for public display.
           </p>
         </div>
       </section>
 
-      <ProjectMap projects={projects} />
+      <ProjectMap data={data} />
     </>
   );
 }

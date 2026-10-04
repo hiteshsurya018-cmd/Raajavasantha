@@ -9,12 +9,16 @@ export type MediaPhoto = {
   cloudinary_url: string; thumbnail_url: string; source: string; source_ref: string | null;
   alt: string; caption: string | null; created_at: string; approved: boolean;
   resource_type: string | null;
+  latitude: number | null; longitude: number | null; location_accuracy: number | null;
+  captured_at: string | null; location_visibility: "exact" | "approximate" | "area" | "hidden"; location_label: string | null;
 };
 export type MediaFolder = {
   id: string; name: string; slug: string; description: string | null;
   cover_photo_id: string | null; is_public: boolean; created_at: string; updated_at: string;
   photo_count: number; cover_url: string | null; cover_alt: string | null;
   category: string; location: string; status: string; featured: boolean;
+  latitude: number | null; longitude: number | null;
+  location_visibility: "exact" | "approximate" | "area" | "hidden";
 };
 export type CreateProjectInput = {
   name: string; description: string; category: string; location: string; isPublic: boolean;
@@ -26,7 +30,7 @@ const folderProjection = `
     COUNT(g.id) FILTER (WHERE g.approved = true)::int AS photo_count,
     COALESCE(p.cover_image, MIN(g.src) FILTER (WHERE g.approved = true AND COALESCE(g.resource_type, 'image') = 'image')) AS cover_url,
     COALESCE(p.cover_image_alt, MIN(g.alt) FILTER (WHERE g.approved = true AND COALESCE(g.resource_type, 'image') = 'image')) AS cover_alt,
-    p.category, p.location, p.status, p.featured
+    p.category, p.location, p.status, p.featured, p.latitude, p.longitude, p.location_visibility
   FROM projects p
   LEFT JOIN project_gallery_images g ON g.project_id = p.id
   LEFT JOIN project_gallery_images cover
@@ -73,7 +77,8 @@ export async function getFolderPhotos(projectId: string, publicOnly = false) {
     SELECT id, project_id AS folder_id, COALESCE(original_filename, 'photograph') AS original_filename,
       COALESCE(mime_type, 'image/unknown') AS mime_type, COALESCE(bytes, 0) AS original_bytes,
       width, height, src AS cloudinary_url, src AS thumbnail_url, source, source_ref,
-      alt, caption, created_at, approved, resource_type
+      alt, caption, created_at, approved, resource_type,
+      latitude, longitude, location_accuracy, captured_at, location_visibility, location_label
     FROM project_gallery_images
     WHERE project_id = ${projectId} AND (${publicOnly} = false OR approved = true)
     ORDER BY sort_order, created_at DESC

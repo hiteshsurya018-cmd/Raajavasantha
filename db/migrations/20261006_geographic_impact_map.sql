@@ -1,0 +1,16 @@
+alter table projects add column if not exists location_visibility text not null default 'exact';
+alter table project_gallery_images add column if not exists latitude numeric(9, 6);
+alter table project_gallery_images add column if not exists longitude numeric(9, 6);
+alter table project_gallery_images add column if not exists location_accuracy numeric(10, 2);
+alter table project_gallery_images add column if not exists captured_at timestamptz;
+alter table project_gallery_images add column if not exists location_visibility text not null default 'hidden';
+alter table project_gallery_images add column if not exists location_label text;
+alter table projects drop constraint if exists projects_location_visibility_check;
+alter table projects add constraint projects_location_visibility_check check (location_visibility in ('exact', 'approximate', 'area', 'hidden'));
+alter table project_gallery_images drop constraint if exists project_gallery_images_location_visibility_check;
+alter table project_gallery_images add constraint project_gallery_images_location_visibility_check check (location_visibility in ('exact', 'approximate', 'area', 'hidden'));
+alter table projects drop constraint if exists projects_coordinates_check;
+alter table projects add constraint projects_coordinates_check check ((latitude is null and longitude is null) or (latitude between -90 and 90 and longitude between -180 and 180 and not (latitude = 0 and longitude = 0)));
+alter table project_gallery_images drop constraint if exists project_gallery_images_coordinates_check;
+alter table project_gallery_images add constraint project_gallery_images_coordinates_check check ((latitude is null and longitude is null) or (latitude between -90 and 90 and longitude between -180 and 180 and not (latitude = 0 and longitude = 0)));
+create index if not exists project_gallery_images_location_idx on project_gallery_images (latitude, longitude) where approved = true and latitude is not null and longitude is not null;
