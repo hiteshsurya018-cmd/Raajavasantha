@@ -1,97 +1,309 @@
-# Rajavasantha Welfare Trust — Website
+# Rajavasantha Welfare Trust
 
-Production Next.js 15 / React 19 / TypeScript / Tailwind codebase.
+Production website and administration system for the Rajavasantha Welfare Trust.
 
-## Design plan
+- Production: <https://rajavasanthatrust.org>
+- Framework: Next.js 15, React 19, TypeScript and Tailwind CSS
+- Database: Neon PostgreSQL
+- Media storage: Cloudinary
+- Media source: Google Photos Picker API
+- Mapping: MapLibre GL with GeoJSON clustering
 
-**Palette** — Primary `#7A1E22` (Kumkum maroon), Secondary `#D4A437` (Marigold),
-Canvas `#FFFDF8` (Parchment), Accent `#F8F3EA` (Sand), Ink `#2C2C2C`, plus two
-neutrals derived from the same hues (`ink-soft`, `line`) so nothing outside the
-brief's palette appears.
+## Local development
 
-**Type** — Playfair Display for every heading (`font-display`), Inter for body
-copy, and a small tracked-caps Inter treatment (`.eyebrow`) as the utility face
-for labels and dates.
+Requirements:
 
-**Layout** — Alternating rhythm of maroon "statement" sections (Impact, Donate)
-and warm parchment/sand sections, generous whitespace, `rounded-3xl`/`4xl`
-cards, soft multi-layer shadows instead of hard borders.
+- Node.js 20 or newer
+- npm
+- A PostgreSQL/Neon database
+- Cloudinary credentials
+- A Google OAuth client with the Google Photos Picker API enabled
 
-**Signature element — the Root & Branch line** (`components/ui/root-line.tsx`):
-a single hand-drawn organic line, half root half branch, that draws itself in
-as the reader scrolls past the Focus Areas grid. It echoes the banyan tree at
-the centre of the trust's own crest and the tagline "Society is our family" —
-every programme is one continuous act of growth, not a stack of disconnected
-panels. The same growth idea resurfaces as a literal filling "sapling" bar in
-the donation calculator, so giving more visibly grows the tree.
+Install and start:
 
-## Structure
-
-```
-app/
-  layout.tsx        Fonts, metadata, skip-link, Navbar/Footer shell
-  page.tsx           Homepage — composes all sections in order
-  loading.tsx         Route-level skeleton
-  error.tsx            Branded error boundary
-  globals.css           Tokens, focus states, reduced-motion, signature CSS
-components/
-  navbar.tsx          Glass nav, mega menu, mobile drawer
-  footer.tsx            Quick links, contact, map slot
-  ui/                    Reusable primitives: Button, Reveal, AnimatedCounter,
-                          RootLine, SectionHeading
-  sections/             hero, trust-indicators, impact-counters, focus-areas,
-                         featured-projects, testimonials, latest-news, gallery,
-                         volunteer-cta, donate-section, newsletter
-lib/utils.ts            cn(), formatIndianNumber(), formatINR()
+```bash
+npm install
+npm run db:migrate
+npm run dev
 ```
 
-Every section is a self-contained, independently reusable component — drop
-any of them into another route without touching the rest of the page.
+The application is available at <http://localhost:3000>.
 
-## Motion
+## Environment variables
 
-- **Reveal** (`components/ui/reveal.tsx`) — scroll-triggered fade/slide via
-  Framer Motion `whileInView`, with an optional `stagger` mode for grids.
-  Respects `prefers-reduced-motion` globally through `useReducedMotion` and a
-  CSS fallback in `globals.css`.
-- **Hero parallax** — `useScroll` + `useTransform` on the background image and
-  content layers, opacity fade as the reader scrolls past.
-- **AnimatedCounter** — spring-driven count-up, fires once via
-  `useInView`, formatted with Indian digit grouping (`12,500` not `12500`).
-- **RootLine** — `stroke-dashoffset` draw-in, triggered by the same
-  `useInView` pattern, with leaf nodes that pop in after the line completes.
-- **Button ripple** — pointer-position ripple on click, CSS keyframe, cleans
-  itself up after 700ms.
+Copy `.env.example` to `.env.local` and configure:
 
-## Accessibility
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Neon/PostgreSQL connection string |
+| `ADMIN_PASSWORD` | Admin login credential |
+| `ADMIN_SESSION_SECRET` | Signs admin sessions |
+| `GOOGLE_PHOTOS_CLIENT_ID` | Google OAuth client ID |
+| `GOOGLE_PHOTOS_CLIENT_SECRET` | Google OAuth client secret |
+| `GOOGLE_PHOTOS_REDIRECT_URI` | OAuth callback URL |
+| `GOOGLE_PHOTOS_TOKEN_ENCRYPTION_KEY` | Encrypts the stored refresh token |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | Server-side Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Server-side Cloudinary API secret |
 
-- Skip-to-content link, visible focus rings (`:focus-visible`) in the brand
-  gold, `aria-label`/`aria-live`/`aria-modal` on the testimonial carousel and
-  gallery lightbox, full keyboard support (Esc/←/→) in the lightbox.
-- All decorative SVGs are `aria-hidden`; all content images carry descriptive
-  `alt` text.
-- Color contrast: body text `#2C2C2C` on `#FFFDF8` and `#F8F3EA` clears AA at
-  all sizes used; maroon-on-canvas CTA text clears AA for large text.
+Production callback:
 
-## Before shipping
+```text
+https://rajavasanthatrust.org/api/google/photos/callback
+```
 
-1. `npm install`
-2. Replace the placeholder image paths (`/public/hero`, `/public/projects`,
-   `/public/gallery`, `/public/testimonials`, `/public/news`) with real
-   photography — the layout, `sizes`, and `fill` props are already wired for
-   `next/image` optimization.
-3. Wire `DonateSection` and `VolunteerCta`'s `handleSubmit` to your payment
-   gateway / CRM endpoint (Razorpay recommended for 80G receipting in India).
-4. Add `app/(routes)` pages for About, Our Work, Projects, Gallery, News,
-   Contact — the Navbar and Footer already link to these paths.
-5. Dark mode is wired via Tailwind's `class` strategy and dark tokens in
-   `tailwind.config.ts` / `globals.css`; add a theme toggle where desired.
+Never commit real credentials or copy server secrets into client components.
 
-## Lighthouse notes
+## Database migrations
 
-- `next/font` self-hosts Playfair Display + Inter (no render-blocking Google
-  Fonts request).
-- `next/image` handles AVIF/WEBP, responsive `sizes`, and lazy-loading below
-  the fold automatically.
-- Sections below the hero are code-split per-route by the App Router; no
-  manual `dynamic()` needed unless you add heavy client-only widgets.
+Migrations live in `db/migrations` and are applied in filename order:
+
+```bash
+npm run db:migrate
+```
+
+The command is intentionally non-destructive. Do not reset the production
+database or remove existing project/media records.
+
+The principal production tables are:
+
+- `projects` — the single source of truth for admin and public projects.
+- `project_gallery_images` — project media, Cloudinary references,
+  fingerprints, source references and optional geographic metadata.
+- `google_photos_connections` — the encrypted Google Photos refresh token.
+- Project objective, impact metric and reference tables.
+
+Legacy media-folder tables remain for migration compatibility, but public
+projects and current Media Studio operations use `projects.id` and
+`project_gallery_images.project_id`.
+
+## Admin Media Studio
+
+Protected routes:
+
+- `/admin/login`
+- `/admin`
+- `/admin/folders/[id]`
+
+The Media Studio supports:
+
+- Creating and editing projects.
+- Importing selected photos and videos through Google Photos Picker.
+- Project-scoped Cloudinary ingestion.
+- Publishing, unpublishing, featuring and deleting projects.
+- Selecting, moving and deleting stored project media.
+- Editing photo location labels and optional coordinates.
+- Controlling location privacy and verification.
+
+Every mutation is authorized at the API route, not only by middleware.
+Mutation routes also enforce the existing same-origin checks.
+
+## Google Photos import flow
+
+```text
+Admin
+  -> authenticated Picker session
+  -> Google-hosted Picker
+  -> selected mediaItems.list results
+  -> authenticated temporary baseUrl download
+  -> content/MIME/size validation
+  -> SHA-256 fingerprint
+  -> optional EXIF extraction
+  -> Cloudinary
+  -> project_gallery_images
+  -> project gallery
+```
+
+The application does not iframe, scrape or proxy the Google Photos UI.
+Temporary Google `baseUrl` values are never stored as permanent website
+media URLs.
+
+### Duplicate semantics
+
+Imports preserve both:
+
+- `source_ref = google-photos:<mediaItemId>`
+- SHA-256 `media_fingerprint` calculated from downloaded source bytes
+
+Duplicate responses distinguish:
+
+- `SAME_GOOGLE_ITEM` — the persistent Google media item was imported before.
+- `SAME_FILE` — identical downloaded bytes already exist.
+- `RACE_CONDITION` — another concurrent request inserted the item first.
+- `UNKNOWN_DUPLICATE` — duplicate confirmed without a more specific reason.
+
+The UI reports duplicates as **Already imported**, not as failures and not as
+new imports. Existing media is never silently duplicated or moved.
+
+### Google Photos location limitation
+
+The Picker API does not expose the human-readable place shown in the Google
+Photos Info panel. Google also documents that the `=d` media download omits
+location EXIF.
+
+Consequently:
+
+- GPS and a location label are never required for import.
+- Missing or malformed EXIF does not fail an import.
+- The application never fabricates coordinates or place names.
+- Admins can add a human-readable location label without coordinates.
+- Coordinates can be added or cleared later.
+- Photo location never overwrites the official project location.
+
+Available non-location EXIF is preserved where present, including capture time,
+camera/lens details, aperture, exposure, ISO and focal length.
+
+## Geographic impact map
+
+Public map:
+
+```text
+/projects/map
+```
+
+GeoJSON endpoint:
+
+```text
+/api/projects/map
+```
+
+The MapLibre map uses coordinate-level GeoJSON clustering, project/media
+filters, viewport summaries and accessible project-list fallbacks.
+
+Location privacy levels:
+
+- `exact`
+- `approximate`
+- `area`
+- `hidden`
+
+Photo coordinates only reach the public map when the media is approved,
+coordinates are valid, visibility is not hidden and an administrator has
+verified the location. A location label without coordinates remains valid but
+is not guessed onto the map.
+
+Supported deep links:
+
+```text
+/projects/map?project=<project-id-or-slug>
+/projects/map?lat=<latitude>&lng=<longitude>&zoom=<zoom>
+```
+
+## Public project system
+
+- `/projects` — search, filters, featured projects and published archive.
+- `/projects/[slug]` — project record and approved gallery.
+- `/projects/map` — approved geographic project/media data.
+
+Only `projects.is_public = true` records are returned publicly. Gallery
+queries additionally require `project_gallery_images.approved = true`.
+Admin feature controls update the existing `projects.featured` value used by
+the public project listing.
+
+## Media validation and storage
+
+The ingestion pipeline:
+
+- Verifies supported MIME types and actual file signatures.
+- Enforces separate image/video size limits.
+- Uses bounded streaming reads and download timeouts.
+- Uploads to Cloudinary only from authenticated server routes.
+- Stores canonical HTTPS Cloudinary URLs and asset identifiers.
+- Cleans up Cloudinary uploads if database persistence fails.
+- Cleans up race-losing duplicate uploads.
+- Keeps Google Photos originals untouched.
+
+Grid thumbnails use responsive optimization. Project lightboxes use the
+canonical high-resolution Cloudinary asset rather than upscaling a thumbnail.
+
+## Commands
+
+```bash
+npm run dev
+npm run lint
+npm test
+npm run build
+npm run start
+npm run db:migrate
+```
+
+Before deployment:
+
+```bash
+npm run lint
+npm test
+npm run build
+git diff --check
+```
+
+Existing lint warnings should be investigated, but must not be hidden by
+disabling rules globally.
+
+## Deployment
+
+The repository is connected to the existing Vercel project:
+
+```text
+rajavasantha-welfare-trust
+```
+
+Production domains:
+
+```text
+https://rajavasanthatrust.org
+https://www.rajavasanthatrust.org
+```
+
+Before a production deployment:
+
+1. Apply pending migrations.
+2. Confirm all required production environment variables in Vercel.
+3. Confirm the Google OAuth client authorizes the production callback.
+4. Run lint, tests and the production build.
+5. Perform an authenticated Google Photos browser smoke test.
+
+Do not claim the real Picker flow passed unless it was tested with an
+authenticated Google account and actual selected media.
+
+## Design system
+
+The site uses the established Rajavasantha visual language:
+
+- Deep forest green, warm gold and ivory.
+- Cormorant Garamond display typography.
+- Inter UI/body typography.
+- Editorial spacing, restrained motion and visible keyboard focus.
+- Reduced-motion support and accessible dialogs/lightboxes.
+
+Reuse existing components and tokens rather than introducing a second design
+system.
+
+## Security notes
+
+- Admin sessions are signed and stored in secure HttpOnly cookies.
+- Secure cookies are enabled in production.
+- Sensitive Google Photos and media mutations require server-side admin auth.
+- OAuth state is validated using the existing secure flow.
+- Google refresh tokens are encrypted at rest.
+- OAuth tokens, session secrets, passwords and Cloudinary secrets must never be
+  logged or returned to the browser.
+- Public project and map queries enforce publication/approval rules.
+
+## Manual production smoke test
+
+After deployment:
+
+1. Open `/admin/login` and authenticate.
+2. Open or create a project.
+3. Open Google Photos Picker and select real media.
+4. Import it into the selected project.
+5. Confirm Imported / Already imported / Failed counts.
+6. Confirm the permanent Cloudinary-backed gallery item.
+7. Import the same item again and confirm `SAME_GOOGLE_ITEM`.
+8. Add or clear a location label without coordinates.
+9. Verify media remains valid with no location.
+10. Add verified coordinates only when they are known and approved.
+11. Publish the project and verify `/projects`, its detail page and map.
+
+No fake projects, impact figures, locations or public media should be added for
+testing.

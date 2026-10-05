@@ -14,7 +14,7 @@ function initials(name: string) {
 
 /* =========================================================
    SHARED PREMIUM PORTRAIT
-   Exactly the same treatment for Office Bearers + Trustees
+   Same treatment for Office Bearers + Trustees
    ========================================================= */
 
 function PremiumPortrait({
@@ -26,13 +26,12 @@ function PremiumPortrait({
 }) {
   return (
     <div className="relative h-[158px] w-full shrink-0">
-      {/* Top ambient glow */}
+      {/* Ambient glow */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute right-0 top-0 h-40 w-40 rounded-full bg-gold/6 blur-3xl"
       />
 
-      {/* Bottom ambient glow */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute bottom-0 left-0 h-32 w-32 rounded-full bg-forest-deep/4 blur-3xl"
@@ -50,13 +49,12 @@ function PremiumPortrait({
         className="pointer-events-none absolute left-1/2 top-1/2 h-32 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold/10 blur-3xl"
       />
 
-      {/* Left decorative line */}
+      {/* Decorative lines */}
       <div
         aria-hidden="true"
         className="absolute left-0 top-[78px] h-px w-[28%] bg-gradient-to-r from-transparent via-gold/40 to-gold/15"
       />
 
-      {/* Right decorative line */}
       <div
         aria-hidden="true"
         className="absolute right-0 top-[78px] h-px w-[28%] bg-gradient-to-l from-transparent via-gold/40 to-gold/15"
@@ -89,15 +87,6 @@ function PremiumPortrait({
 
 /* =========================================================
    TRUSTEE CARD
-   Original card size is preserved.
-
-   With image:
-   - Same portrait as Office Bearers
-   - Image reaches the top edge of the card
-   - Only ONE portrait renders at each breakpoint
-
-   Without image:
-   - Original initials layout remains
    ========================================================= */
 
 function TrusteeCard({
@@ -111,13 +100,32 @@ function TrusteeCard({
 }) {
   return (
     <Reveal delay={delay} className={className}>
-      <article className="flex aspect-square h-full flex-col items-start border border-forest-deep/12 bg-card p-2.5 md:aspect-auto md:min-h-[290px] md:p-10 lg:p-12">
+      <article
+        className="
+          relative
+          flex
+          aspect-square
+          h-full
+          flex-col
+          items-start
+          overflow-hidden
+          border
+          border-forest-deep/12
+          bg-card
+          p-2.5
+          md:aspect-auto
+          md:min-h-[290px]
+          md:overflow-visible
+          md:p-10
+          lg:p-12
+        "
+      >
         {person.image ? (
           <>
             {/* =================================================
-                MOBILE PORTRAIT
+                MOBILE PHOTO
                 ================================================= */}
-            <div className="-mx-2 -mt-2 w-[calc(100%+1rem)] md:hidden">
+            <div className="absolute left-0 right-0 top-0 md:hidden">
               <PremiumPortrait
                 src={person.image}
                 name={person.name}
@@ -125,10 +133,9 @@ function TrusteeCard({
             </div>
 
             {/* =================================================
-                DESKTOP PORTRAIT
-                IMPORTANT: hidden on mobile
+                DESKTOP PHOTO
                 ================================================= */}
-            <div className="hidden md:block md:-mx-10 md:-mt-10 md:w-[calc(100%+5rem)] lg:-mx-12 lg:-mt-12 lg:w-[calc(100%+6rem)]">
+            <div className="hidden md:-mx-10 md:-mt-10 md:block md:w-[calc(100%+5rem)] lg:-mx-12 lg:-mt-12 lg:w-[calc(100%+6rem)]">
               <PremiumPortrait
                 src={person.image}
                 name={person.name}
@@ -157,21 +164,56 @@ function TrusteeCard({
           </>
         )}
 
-        {/* Trustee name */}
-        <h2
-          className={`break-words font-display text-lg leading-5 text-forest-deep md:break-normal md:text-3xl md:leading-9 ${
-            person.image
-              ? "mt-2 md:mt-2"
-              : "mt-auto md:mt-8"
-          }`}
+        {/* =====================================================
+            SINGLE TRUSTEE NAME + DESIGNATION BLOCK
+            ===================================================== */}
+        <div
+          className="
+            absolute
+            bottom-2.5
+            left-2.5
+            right-2.5
+            z-20
+            min-w-0
+            bg-card/95
+            pt-1
+            md:static
+            md:mt-8
+            md:bg-transparent
+            md:p-0
+          "
         >
-          {person.name}
-        </h2>
+          <h2
+            className="
+              break-words
+              font-display
+              text-lg
+              leading-5
+              text-forest-deep
+              md:break-normal
+              md:text-3xl
+              md:leading-9
+            "
+          >
+            {person.name}
+          </h2>
 
-        {/* Trustee role */}
-        <p className="mt-1 text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-forest-soft md:mt-2 md:text-[0.72rem] md:tracking-[0.2em]">
-          {person.role}
-        </p>
+          <p
+            className="
+              mt-1
+              text-[0.6rem]
+              font-semibold
+              uppercase
+              tracking-[0.14em]
+              text-forest-soft
+              md:mt-2
+              md:text-[0.72rem]
+              md:tracking-[0.2em]
+            "
+          >
+            {person.role}
+          </p>
+        </div>
       </article>
     </Reveal>
   );
