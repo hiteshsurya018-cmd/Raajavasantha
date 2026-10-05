@@ -170,7 +170,7 @@ export default function FoundingTeamPage() {
       <PageHero
         eyebrow="The people behind the work"
         title="Founding team"
-        description="The people who help guide Rajavasantha Welfare Trust with purpose, responsibility and a commitment to meaningful community work."
+        intro="The people who help guide Rajavasantha Welfare Trust with purpose, responsibility and a commitment to meaningful community work."
       />
 
       <main className="mx-auto max-w-7xl px-5 pb-24 sm:px-8 lg:px-12">
