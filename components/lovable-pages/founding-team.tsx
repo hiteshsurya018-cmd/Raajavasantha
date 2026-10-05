@@ -14,7 +14,7 @@ function initials(name: string) {
 
 /* =========================================================
    SHARED PREMIUM PORTRAIT
-   Used identically for Office Bearers + Trustees
+   Exactly the same treatment for Office Bearers + Trustees
    ========================================================= */
 
 function PremiumPortrait({
@@ -89,9 +89,15 @@ function PremiumPortrait({
 
 /* =========================================================
    TRUSTEE CARD
-   Original card dimensions/layout preserved.
-   When an image exists, the portrait block reaches the
-   top edge of the existing card.
+   Original card size is preserved.
+
+   With image:
+   - Same portrait as Office Bearers
+   - Image reaches the top edge of the card
+   - Only ONE portrait renders at each breakpoint
+
+   Without image:
+   - Original initials layout remains
    ========================================================= */
 
 function TrusteeCard({
@@ -108,7 +114,9 @@ function TrusteeCard({
       <article className="flex aspect-square h-full flex-col items-start border border-forest-deep/12 bg-card p-2.5 md:aspect-auto md:min-h-[290px] md:p-10 lg:p-12">
         {person.image ? (
           <>
-            {/* Mobile — image reaches the top of the card */}
+            {/* =================================================
+                MOBILE PORTRAIT
+                ================================================= */}
             <div className="-mx-2 -mt-2 w-[calc(100%+1rem)] md:hidden">
               <PremiumPortrait
                 src={person.image}
@@ -116,8 +124,11 @@ function TrusteeCard({
               />
             </div>
 
-            {/* Desktop — cancel the original card padding */}
-            <div className="-mx-10 -mt-10 w-[calc(100%+5rem)] lg:-mx-12 lg:-mt-12 lg:w-[calc(100%+6rem)]">
+            {/* =================================================
+                DESKTOP PORTRAIT
+                IMPORTANT: hidden on mobile
+                ================================================= */}
+            <div className="hidden md:block md:-mx-10 md:-mt-10 md:w-[calc(100%+5rem)] lg:-mx-12 lg:-mt-12 lg:w-[calc(100%+6rem)]">
               <PremiumPortrait
                 src={person.image}
                 name={person.name}
@@ -146,6 +157,7 @@ function TrusteeCard({
           </>
         )}
 
+        {/* Trustee name */}
         <h2
           className={`break-words font-display text-lg leading-5 text-forest-deep md:break-normal md:text-3xl md:leading-9 ${
             person.image
@@ -156,6 +168,7 @@ function TrusteeCard({
           {person.name}
         </h2>
 
+        {/* Trustee role */}
         <p className="mt-1 text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-forest-soft md:mt-2 md:text-[0.72rem] md:tracking-[0.2em]">
           {person.role}
         </p>
