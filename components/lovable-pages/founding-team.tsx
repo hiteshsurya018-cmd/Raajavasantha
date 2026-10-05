@@ -170,7 +170,7 @@ function TrusteeCard({
         <div
           className="
             absolute
-            bottom-2.5
+            bottom-0
             left-2.5
             right-2.5
             z-20
