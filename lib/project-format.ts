@@ -6,7 +6,7 @@ export function getProjectDateLabel(project: TrustProject) {
   }
 
   if (project.startDate) {
-    return `Started ${formatDate(project.startDate)}`;
+    return formatDate(project.startDate);
   }
 
   return String(project.year);
