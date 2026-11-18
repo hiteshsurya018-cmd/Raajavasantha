@@ -58,10 +58,6 @@ export default async function ProjectDetailPage({ params }: ProjectDetailProps) 
     notFound();
   }
 
-  const hasCoordinates =
-    typeof project.latitude === "number" &&
-    typeof project.longitude === "number";
-
   return (
     <main className="min-h-screen bg-ivory">
       <div className="mx-auto grid max-w-[80rem] gap-10 px-5 pb-16 pt-24 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-14 lg:px-10 lg:pb-24 lg:pt-28">
@@ -77,23 +73,19 @@ export default async function ProjectDetailPage({ params }: ProjectDetailProps) 
           <h1 className="mt-8 font-display text-4xl leading-tight text-forest-deep">
             {project.title}
           </h1>
+          {project.description && (
+            <p className="mt-5 text-sm leading-7 text-muted-foreground">
+              {project.description}
+            </p>
+          )}
 
           <p className="eyebrow mt-10">Project record</p>
           <dl className="mt-6 divide-y divide-forest-deep/10 border-y border-forest-deep/10">
-            <DetailMeta label="Category" value={project.category || "Pending"} />
             <DetailMeta
               label="Location"
               value={getProjectLocationLabel(project)}
             />
             <DetailMeta label="Date" value={getProjectDateLabel(project)} />
-            <DetailMeta
-              label="Coordinates"
-              value={
-                hasCoordinates
-                  ? `${project.latitude}, ${project.longitude}`
-                  : "Pending verification"
-              }
-            />
           </dl>
         </aside>
 

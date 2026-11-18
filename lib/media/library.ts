@@ -21,11 +21,13 @@ export type MediaFolder = {
   cover_photo_id: string | null; is_public: boolean; created_at: string; updated_at: string;
   photo_count: number; cover_url: string | null; cover_alt: string | null;
   category: string; location: string; status: string; featured: boolean;
+  start_date: string | null;
   latitude: number | null; longitude: number | null;
   location_visibility: "exact" | "approximate" | "area" | "hidden";
 };
 export type CreateProjectInput = {
-  name: string; description: string; category: string; location: string; isPublic: boolean;
+  name: string; description: string; category: string; location: string;
+  startDate: string | null; isPublic: boolean;
 };
 
 const folderProjection = `
@@ -34,7 +36,8 @@ const folderProjection = `
     COUNT(g.id) FILTER (WHERE g.approved = true)::int AS photo_count,
     COALESCE(p.cover_image, MIN(g.src) FILTER (WHERE g.approved = true AND COALESCE(g.resource_type, 'image') = 'image')) AS cover_url,
     COALESCE(p.cover_image_alt, MIN(g.alt) FILTER (WHERE g.approved = true AND COALESCE(g.resource_type, 'image') = 'image')) AS cover_alt,
-    p.category, p.location, p.status, p.featured, p.latitude, p.longitude, p.location_visibility
+    p.category, p.location, p.status, p.featured, p.start_date::text AS start_date,
+    p.latitude, p.longitude, p.location_visibility
   FROM projects p
   LEFT JOIN project_gallery_images g ON g.project_id = p.id
   LEFT JOIN project_gallery_images cover
@@ -100,11 +103,12 @@ export async function createMediaFolder(input: CreateProjectInput) {
       const rows = await sql`
         INSERT INTO projects (
           slug, title, description, short_description, category, location,
-          country, status, featured, is_public
+          country, status, featured, is_public, start_date, year
         ) VALUES (
           ${slug}, ${input.name.trim().slice(0, 120)}, ${input.description},
           ${input.description.slice(0, 320)}, ${input.category}, ${input.location},
-          'India', 'planning', false, ${input.isPublic}
+          'India', 'planning', false, ${input.isPublic}, ${input.startDate},
+          ${input.startDate ? Number(input.startDate.slice(0, 4)) : null}
         ) RETURNING *
       `;
       return { ...rows[0], name: rows[0].title, photo_count: 0, cover_url: null, cover_alt: null, cover_photo_id: null };
