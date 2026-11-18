@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { CheckCircle2, EllipsisVertical, Eye, EyeOff, FolderOpen, ImagePlus, Plus, Star, Trash2 } from "lucide-react";
 import type { MediaFolder } from "@/lib/media/library";
@@ -24,6 +25,7 @@ function duration(value?: string, fallback = 2000) {
 }
 
 export function MediaLibraryAdmin({ initialFolders, connection }: { initialFolders: MediaFolder[]; connection: Connection }) {
+  const router = useRouter();
   const [folders, setFolders] = useState(initialFolders);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -36,6 +38,10 @@ export function MediaLibraryAdmin({ initialFolders, connection }: { initialFolde
   const [dragOverId, setDragOverId] = useState("");
   const [importProgress, setImportProgress] = useState({ done: 0, total: 0 });
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [deviceFiles, setDeviceFiles] = useState<File[]>([]);
+  const [deviceBusy, setDeviceBusy] = useState(false);
+  const [deviceProgress, setDeviceProgress] = useState({ done: 0, total: 0 });
+  const [deviceResult, setDeviceResult] = useState<ImportResult | null>(null);
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activePickerSession = useRef("");
   const preparingPicker = useRef(false);
@@ -192,6 +198,31 @@ export function MediaLibraryAdmin({ initialFolders, connection }: { initialFolde
     void preparePicker(true);
   }
 
+  async function uploadFromDevice() {
+    if (!deviceFiles.length || !destinationId || deviceBusy) return;
+    const project = folders.find((item) => item.id === destinationId);
+    if (!project) { setError("Choose a valid destination project."); return; }
+    setDeviceBusy(true); setError(""); setDeviceResult(null);
+    setDeviceProgress({ done: 0, total: deviceFiles.length });
+    const summary: ImportResult = { imported: 0, alreadyImported: [], failed: [] };
+    for (const file of deviceFiles) {
+      try {
+        const form = new FormData();
+        form.set("file", file);
+        form.set("alt", `${project.name} photograph`);
+        const response = await fetch(`/api/admin/folders/${project.id}/photos`, { method: "POST", body: form });
+        const data = await read<ImportResponse>(response);
+        if (data.duplicate) summary.alreadyImported.push({ filename: file.name, reason: data.duplicateReason, existingProjectId: data.existingProjectId, existingProjectName: data.existingProjectName });
+        else summary.imported += 1;
+      } catch (reason) {
+        summary.failed.push(`${file.name}: ${reason instanceof Error ? reason.message : "Upload failed."}`);
+      }
+      setDeviceProgress((value) => ({ ...value, done: value.done + 1 }));
+    }
+    setFolders((items) => items.map((item) => item.id === project.id ? { ...item, photo_count: item.photo_count + summary.imported, updated_at: new Date().toISOString() } : item));
+    setDeviceResult(summary); setDeviceFiles([]); setDeviceBusy(false); router.refresh();
+  }
+
   async function toggleVisibility(folder: MediaFolder) {
     setBusyId(folder.id);
     setError("");
@@ -257,7 +288,7 @@ export function MediaLibraryAdmin({ initialFolders, connection }: { initialFolde
             <div>
               <h1 className="display-lg text-ivory">Rajavasantha Media Studio</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-ivory/60">
-                Select photographs from Google Photos, organise them into existing Rajavasantha projects, and control what appears publicly.
+                Upload original photographs from your device or select them from Google Photos, organise them into projects, and control what appears publicly.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -273,6 +304,20 @@ export function MediaLibraryAdmin({ initialFolders, connection }: { initialFolde
 
         {error && <p role="alert" className="mt-6 border border-red-300/30 bg-red-950/30 p-4 text-sm text-red-100">{error}</p>}
         {notice && <p role="status" className="mt-6 border border-gold/25 bg-gold/10 px-4 py-3 text-sm text-ivory">{notice}</p>}
+
+        <section className="mt-6 border border-gold/25 bg-black/10 p-4 sm:p-5" aria-label="Upload photographs from your device">
+          <div className="grid gap-4 lg:grid-cols-[1fr_auto_auto] lg:items-end">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-ivory/55">Upload from device (up to 60 MB per image)
+              <input type="file" accept="image/*" multiple disabled={deviceBusy} onChange={(event) => { setDeviceFiles(Array.from(event.target.files ?? [])); setDeviceResult(null); }} className="mt-2 block w-full text-sm normal-case tracking-normal text-ivory file:mr-4 file:border-0 file:bg-gold file:px-4 file:py-2.5 file:font-semibold file:text-forest-deep" />
+            </label>
+            <label className="block min-w-[14rem] text-xs font-semibold uppercase tracking-wider text-ivory/55">Destination project
+              <select value={destinationId} onChange={(event) => setDestinationId(event.target.value)} className="mt-2 w-full border border-ivory/15 bg-forest-deep px-3 py-2.5 text-sm font-normal normal-case tracking-normal text-ivory"><option value="">Select project…</option>{folders.map((folder) => <option key={folder.id} value={folder.id}>{folder.name}</option>)}</select>
+            </label>
+            <button type="button" disabled={!deviceFiles.length || !destinationId || deviceBusy} onClick={() => void uploadFromDevice()} className="inline-flex items-center justify-center gap-2 bg-gold px-5 py-3 text-sm font-semibold text-forest-deep disabled:opacity-50"><ImagePlus size={17} aria-hidden="true" />{deviceBusy ? `Uploading ${deviceProgress.done}/${deviceProgress.total}` : `Upload ${deviceFiles.length || "photos"}`}</button>
+          </div>
+          {deviceBusy && <div className="mt-4 h-1 bg-ivory/10"><div className="h-full bg-gold transition-[width]" style={{ width: `${deviceProgress.total ? deviceProgress.done / deviceProgress.total * 100 : 0}%` }} /></div>}
+          {deviceResult && <div className="mt-4 border-t border-ivory/10 pt-4 text-sm" aria-live="polite"><p className="text-ivory/65"><span className="font-semibold text-ivory">Upload complete:</span> {deviceResult.imported} uploaded · {deviceResult.alreadyImported.length} already in the archive · {deviceResult.failed.length} failed</p>{deviceResult.failed.map((failure) => <p key={failure} className="mt-2 text-xs text-red-200">{failure}</p>)}{deviceResult.alreadyImported.map((item, index) => <p key={item.filename + index} className="mt-2 text-xs text-gold">{item.filename}: already imported{item.existingProjectName ? ` in ${item.existingProjectName}` : ""}.</p>)}</div>}
+        </section>
 
         {!!googleItems.length && (
           <section className="mt-5 border border-gold/30 bg-black/15 p-4 sm:p-5" aria-label="Selected Google Photos media">

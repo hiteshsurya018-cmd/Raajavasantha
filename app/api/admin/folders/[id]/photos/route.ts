@@ -1,6 +1,6 @@
 import { requireAdminApi } from "@/lib/auth/admin-session";
 import { ingestMedia } from "@/lib/media/ingest-media";
-import { MAX_MEDIA_BYTES } from "@/lib/media/media-utils";
+import { detectMediaType, MAX_MEDIA_BYTES } from "@/lib/media/media-utils";
 import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 
@@ -12,9 +12,27 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!(file instanceof File)) return Response.json({ success: false, error: "A photograph is required." }, { status: 400 });
   if (file.size > MAX_MEDIA_BYTES) return Response.json({ success: false, error: "Image exceeds the allowed size." }, { status: 413 });
   try {
-    const result = await ingestMedia({ projectId: id, buffer: Buffer.from(await file.arrayBuffer()), mimeType: file.type, fileSize: file.size, originalFilename: file.name, source: "local", alt: String(form.get("alt") ?? "") || "Rajavasantha Welfare Trust project photograph" });
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const detectedMimeType = detectMediaType(buffer);
+    const result = await ingestMedia({ projectId: id, buffer, mimeType: detectedMimeType ?? file.type, fileSize: file.size, originalFilename: file.name, source: "local", alt: String(form.get("alt") ?? "") || "Rajavasantha Welfare Trust project photograph" });
     return Response.json(result);
-  } catch (error) { const status = error instanceof Error && "status" in error ? Number(error.status) : 500; return Response.json({ success: false, error: status < 500 && error instanceof Error ? error.message : "Unable to save photograph." }, { status }); }
+  } catch (error) {
+    const status = error instanceof Error && "status" in error ? Number(error.status) : 500;
+    if (process.env.NODE_ENV !== "production") {
+      const details = error instanceof Error ? error as Error & { code?: string; http_code?: number } : null;
+      const safeMessage = (details?.message ?? "Unknown upload error")
+        .replace(/postgres(?:ql)?:\/\/[^\s"']+/gi, "[database connection redacted]")
+        .replace(/(api[_-]?key|secret|password|token)\s*[:=]\s*[^,\s]+/gi, "$1=[redacted]")
+        .slice(0, 400);
+      console.error("Admin photo upload failed", {
+        name: details?.name ?? "UnknownError",
+        code: details?.code,
+        httpCode: details?.http_code,
+        message: safeMessage,
+      });
+    }
+    return Response.json({ success: false, error: status < 500 && error instanceof Error ? error.message : "Unable to save photograph." }, { status });
+  }
 }
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
