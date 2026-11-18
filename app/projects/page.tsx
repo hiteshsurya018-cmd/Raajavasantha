@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { ProjectDiscovery } from "@/components/projects/ProjectDiscovery";
-import {
-  getProjectFacets,
-  getProjects,
-} from "@/lib/projects";
+import { getProjects } from "@/lib/projects";
 import { lovableAssets } from "@/lib/lovable-assets";
 
 export const dynamic = "force-dynamic";
@@ -30,17 +27,13 @@ export const metadata: Metadata = {
 };
 
 export default async function ProjectsPage() {
-  const [projects, facets] = await Promise.all([
-    getProjects(),
-    getProjectFacets(),
-  ]);
+  const projects = await getProjects();
   const featuredProjects = projects.filter((project) => project.featured);
 
   return (
     <ProjectDiscovery
       projects={projects}
       featuredProjects={featuredProjects}
-      facets={facets}
     />
   );
 }
